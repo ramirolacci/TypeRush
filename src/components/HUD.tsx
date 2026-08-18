@@ -1,6 +1,6 @@
 import React from 'react';
 import type { GameStats, Settings } from '../types/game';
-import { Settings as SettingsIcon, Pause, Play, Globe, RefreshCw } from 'lucide-react';
+import { Settings as SettingsIcon, Pause, Play, Globe, RefreshCw, Heart, Zap } from 'lucide-react';
 
 interface HUDProps {
   stats: GameStats;
@@ -9,8 +9,6 @@ interface HUDProps {
   onTogglePause: () => void;
   onOpenSettings: () => void;
   onRestart: () => void;
-  trackName?: string;
-  progressPercent?: number;
 }
 
 export const HUD: React.FC<HUDProps> = ({
@@ -19,16 +17,14 @@ export const HUD: React.FC<HUDProps> = ({
   isPaused,
   onTogglePause,
   onOpenSettings,
-  onRestart,
-  trackName = "TypeRush Rhythm Flow",
-  progressPercent = 0
+  onRestart
 }) => {
   return (
     <div className="absolute top-0 left-0 right-0 p-3 sm:p-5 flex justify-between items-start pointer-events-none z-40">
-      {/* Top Left: Score & Combo Multiplier Card */}
-      <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md min-w-[140px] sm:min-w-[180px]">
+      {/* Top Left: Score, Combo & Lives Counter */}
+      <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md min-w-[140px] sm:min-w-[190px]">
         <div className="text-[10px] sm:text-xs tracking-widest text-zinc-400 font-mono uppercase">SCORE</div>
-        <div className="text-2xl sm:text-4xl font-black font-mono text-white tracking-wider my-1">
+        <div className="text-2xl sm:text-4xl font-black font-mono text-white tracking-wider my-0.5">
           {stats.score.toLocaleString()}
         </div>
 
@@ -42,6 +38,24 @@ export const HUD: React.FC<HUDProps> = ({
               className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-200"
               style={{ width: `${Math.min(100, (stats.combo % 10) * 10)}%` }}
             />
+          </div>
+        </div>
+
+        {/* 3-Lives Counter System */}
+        <div className="flex items-center justify-between gap-1.5 mt-2 pt-2 border-t border-zinc-800/80">
+          <span className="text-[10px] font-mono uppercase text-zinc-400 font-bold">VIDAS:</span>
+          <div className="flex items-center gap-1">
+            {[0, 1, 2].map((idx) => {
+              const isLost = idx < (stats.missedWordsCount || 0);
+              return (
+                <Heart
+                  key={`heart-${idx}`}
+                  className={`w-4 h-4 transition-all duration-300 ${
+                    isLost ? 'text-zinc-600 fill-zinc-900 scale-90' : 'text-rose-500 fill-rose-500 animate-pulse'
+                  }`}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
@@ -83,13 +97,11 @@ export const HUD: React.FC<HUDProps> = ({
         </button>
       </div>
 
-      {/* Top Right: Track Info, Accuracy & WPM */}
+      {/* Top Right: Speed, Accuracy & WPM */}
       <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md text-right min-w-[150px] sm:min-w-[200px]">
-        <div className="text-[10px] sm:text-xs font-mono text-zinc-300 font-semibold truncate max-w-[160px] sm:max-w-[220px]">
-          {trackName}
-        </div>
-        <div className="text-[10px] sm:text-xs font-mono uppercase text-amber-500 font-bold">
-          {settings.difficulty} MODE
+        <div className="flex items-center justify-end gap-1.5 text-[10px] sm:text-xs font-mono text-amber-400 font-bold uppercase">
+          <Zap className="w-3 h-3 text-amber-400" />
+          VELOCIDAD: {((stats.currentSpeed || 0.7) * 1.2).toFixed(1)}x
         </div>
 
         {/* Accuracy % */}
@@ -105,8 +117,8 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Progress Bar */}
         <div className="w-full h-1 bg-zinc-800 rounded-full mt-2 overflow-hidden">
           <div
-            className="h-full bg-cyan-500 transition-all duration-300"
-            style={{ width: `${Math.min(100, progressPercent)}%` }}
+            className="h-full bg-amber-500 transition-all duration-300"
+            style={{ width: `${Math.min(100, ((stats.currentSpeed || 0.7) / 1.6) * 100)}%` }}
           />
         </div>
       </div>

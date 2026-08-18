@@ -57,6 +57,8 @@ export interface GameStats {
   greatCount: number;
   goodCount: number;
   missCount: number;
+  missedWordsCount: number;
+  currentSpeed: number;
   totalLettersTyped: number;
   correctLettersTyped: number;
   startTime: number | null;

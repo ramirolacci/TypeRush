@@ -23,9 +23,13 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart }
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in select-none">
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-center">
         {/* Header Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase mb-4">
-          <Trophy className="w-4 h-4" /> FIN DEL JUEGO / GAME OVER
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-mono font-bold uppercase mb-3">
+          <Trophy className="w-4 h-4" /> 3 PALABRAS PERDIDAS / GAME OVER
         </div>
+
+        <p className="text-zinc-400 text-xs font-mono mb-4">
+          Perdiste las 3 vidas al no tipear a tiempo las palabras antes de pasar la línea.
+        </p>
 
         {/* Final Score */}
         <div className="text-xs font-mono text-zinc-400 uppercase tracking-widest">PUNTAJE FINAL / FINAL SCORE</div>

@@ -2,9 +2,6 @@ class SoundEngine {
   private ctx: AudioContext | null = null;
   private isEnabled: boolean = true;
   private sfxVolume: number = 0.7;
-  private musicVolume: number = 0.4;
-  private isMusicPlaying: boolean = false;
-  private musicInterval: number | null = null;
 
   constructor() {
     // AudioContext will be initialized on first user interaction
@@ -30,8 +27,8 @@ class SoundEngine {
     this.sfxVolume = Math.max(0, Math.min(1, vol));
   }
 
-  public setMusicVolume(vol: number) {
-    this.musicVolume = Math.max(0, Math.min(1, vol));
+  public setMusicVolume(_vol: number) {
+    // Music disabled per user requirement
   }
 
   // Play crisp mechanical key press sound
@@ -126,76 +123,13 @@ class SoundEngine {
     });
   }
 
-  // Background Synth Beat Loop Generator
+  // Background Synth Beat Loop Generator (Disabled per user requirement)
   public startMusic() {
-    if (this.isMusicPlaying) return;
-    this.isMusicPlaying = true;
-    let step = 0;
-
-    const playBeatStep = () => {
-      if (!this.isMusicPlaying || !this.isEnabled || this.musicVolume <= 0) return;
-      this.init();
-      if (!this.ctx) return;
-
-      const now = this.ctx.currentTime;
-
-      // Kick drum on 0, 4, 8, 12
-      if (step % 4 === 0) {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.frequency.setValueAtTime(130, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.08);
-        gain.gain.setValueAtTime(this.musicVolume * 0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      }
-
-      // Hi-hat pulse on every step
-      if (step % 2 === 0) {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(4000, now);
-        gain.gain.setValueAtTime(this.musicVolume * 0.05, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.02);
-      }
-
-      // Synth Bassline note on beat
-      if (step % 2 === 1) {
-        const notes = [110, 110, 130, 98]; // A2, A2, C3, G2
-        const freq = notes[Math.floor(step / 4) % notes.length];
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(this.musicVolume * 0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.1);
-      }
-
-      step = (step + 1) % 16;
-    };
-
-    // 120 BPM = 125ms per 16th note
-    this.musicInterval = window.setInterval(playBeatStep, 125);
+    return;
   }
 
   public stopMusic() {
-    this.isMusicPlaying = false;
-    if (this.musicInterval !== null) {
-      clearInterval(this.musicInterval);
-      this.musicInterval = null;
-    }
+    return;
   }
 }
 

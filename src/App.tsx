@@ -51,6 +51,8 @@ export const App: React.FC = () => {
     greatCount: 0,
     goodCount: 0,
     missCount: 0,
+    missedWordsCount: 0,
+    currentSpeed: 0.7,
     totalLettersTyped: 0,
     correctLettersTyped: 0,
     startTime: null,
@@ -137,6 +139,8 @@ export const App: React.FC = () => {
     spawnWordNotes(nextWordText, newWordId);
   }, [settings.language, settings.difficulty, spawnWordNotes]);
 
+  const hasAdvancedRef = useRef(false);
+
   // Start / Restart Game Round
   const startNewGame = useCallback(() => {
     const firstWordText = getRandomWord(settings.language, settings.difficulty);
@@ -162,6 +166,8 @@ export const App: React.FC = () => {
 
     spawnWordNotes(firstWordText, firstWordId);
 
+    hasAdvancedRef.current = false;
+
     setStats({
       score: 0,
       combo: 0,
@@ -171,6 +177,8 @@ export const App: React.FC = () => {
       greatCount: 0,
       goodCount: 0,
       missCount: 0,
+      missedWordsCount: 0,
+      currentSpeed: 0.7,
       totalLettersTyped: 0,
       correctLettersTyped: 0,
       startTime: Date.now(),
@@ -181,7 +189,6 @@ export const App: React.FC = () => {
     setJudgments([]);
     setParticles([]);
     setGameState('playing');
-    soundEngine.startMusic();
   }, [settings.language, settings.difficulty, spawnWordNotes]);
 
   // Create Spark Explosion Particles
@@ -218,7 +225,8 @@ export const App: React.FC = () => {
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      const speedMultiplier = settings.speed * 0.45;
+      // Falling speed multiplier based on progressive currentSpeed (starts at 0.7, caps at 1.6)
+      const currentSpeedMultiplier = (stats.currentSpeed || 0.7) * 0.45;
 
       // 1. Move all notes downwards
       setNotes(prevNotes => {
@@ -228,39 +236,10 @@ export const App: React.FC = () => {
         const updated = prevNotes.map(note => {
           if (note.hit || note.missed) return note;
 
-          const newProgress = note.progress + delta * speedMultiplier;
+          const newProgress = note.progress + delta * currentSpeedMultiplier;
 
           // Check if passed strike line
           if (newProgress > 1.15) {
-            // Note missed!
-            soundEngine.playHit('MISS');
-            setStats(s => {
-              const newTotal = s.totalLettersTyped + 1;
-              const newAcc = (s.correctLettersTyped / newTotal) * 100;
-              return {
-                ...s,
-                combo: 0,
-                multiplier: 1,
-                missCount: s.missCount + 1,
-                totalLettersTyped: newTotal,
-                accuracy: newAcc
-              };
-            });
-
-            // Add miss judgment popup
-            setJudgments(j => [
-              ...j,
-              {
-                id: `miss-${Date.now()}-${note.id}`,
-                type: 'MISS',
-                x: note.x || window.innerWidth / 2,
-                y: note.y || window.innerHeight * 0.72,
-                timestamp: Date.now(),
-                text: 'MISS',
-                color: '#ef4444'
-              }
-            ]);
-
             return { ...note, progress: newProgress, missed: true };
           }
 
@@ -269,7 +248,7 @@ export const App: React.FC = () => {
 
         // 2. Check active word letter progression & automatic advance
         if (currWord) {
-          // If the note corresponding to current target letter is missed (or passed), advance target index!
+          // If the note corresponding to current target letter is missed (passed strike line), advance target index!
           const targetNote = updated.find(n => n.charIndex === currWord.typedIndex);
           if (targetNote && (targetNote.missed || targetNote.progress > 1.15)) {
             const nextIndex = currWord.typedIndex + 1;
@@ -289,15 +268,44 @@ export const App: React.FC = () => {
           }
         }
 
-        if (shouldAdvanceWord) {
-          // Schedule word advancement
-          setTimeout(() => advanceToNextWord(), 10);
+        // 3. Handle Word Advancement & 3-Missed-Words Limit
+        if (shouldAdvanceWord && !hasAdvancedRef.current) {
+          hasAdvancedRef.current = true;
+          const wasCompleted = currWord && currWord.typedIndex >= currWord.text.length;
+
+          if (!wasCompleted) {
+            soundEngine.playHit('MISS');
+            setStats(s => {
+              const newMissedWords = s.missedWordsCount + 1;
+              if (newMissedWords >= 3) {
+                setTimeout(() => setGameState('gameover'), 50);
+              }
+              return {
+                ...s,
+                combo: 0,
+                multiplier: 1,
+                missCount: s.missCount + 1,
+                missedWordsCount: newMissedWords
+              };
+            });
+          } else {
+            // Word completed successfully! Gradually increase speed up to 1.6 cap
+            setStats(s => ({
+              ...s,
+              currentSpeed: Math.min(1.6, s.currentSpeed + 0.025)
+            }));
+          }
+
+          setTimeout(() => {
+            advanceToNextWord();
+            hasAdvancedRef.current = false;
+          }, 20);
         }
 
         return updated;
       });
 
-      // 3. Update Particles
+      // 4. Update Particles
       setParticles(prev =>
         prev
           .map(p => ({
@@ -310,10 +318,10 @@ export const App: React.FC = () => {
           .filter(p => p.life < p.maxLife)
       );
 
-      // 4. Clean up expired judgments
+      // 5. Clean up expired judgments
       setJudgments(prev => prev.filter(j => Date.now() - j.timestamp < 900));
 
-      // 5. Real-time WPM Calculation
+      // 6. Real-time WPM Calculation
       setStats(s => {
         if (!s.startTime) return s;
         const elapsedMins = (Date.now() - s.startTime) / 60000;
@@ -327,47 +335,69 @@ export const App: React.FC = () => {
 
     animId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(animId);
-  }, [gameState, settings.speed, advanceToNextWord]);
+  }, [gameState, stats.currentSpeed, advanceToNextWord]);
 
-  // Handle Input Keypress (Physical Keyboard or Touch Virtual Keyboard)
+  // Handle Input Keypress with Strike Line Timing Restriction
   const handleKeyPress = useCallback(
     (pressedChar: string) => {
       if (gameState !== 'playing' || !currentWord) return;
-
-      soundEngine.playKeyPress();
 
       const charToMatch = pressedChar.toLowerCase();
       const targetCharIndex = currentWord.typedIndex;
       const targetChar = currentWord.text[targetCharIndex]?.toLowerCase();
 
-      // Find unhit note for active letter
+      // Find active note for current target letter
       const targetNote = notes.find(
         n => !n.hit && !n.missed && n.charIndex === targetCharIndex
       );
 
+      // Rule: Keystrokes are ONLY accepted if the target note is currently inside the bottom circles row (progress 0.70 to 1.15)
+      if (!targetNote) return;
+
+      const isInHitWindow = targetNote.progress >= 0.70 && targetNote.progress <= 1.15;
+
+      if (!isInHitWindow) {
+        // Attempted too early (note is still above circles) or too late
+        soundEngine.playHit('MISS');
+        setJudgments(j => [
+          ...j,
+          {
+            id: `early-${Date.now()}`,
+            type: 'MISS',
+            x: targetNote.x || window.innerWidth / 2,
+            y: targetNote.y || window.innerHeight * 0.72,
+            timestamp: Date.now(),
+            text: targetNote.progress < 0.70 ? 'TEMPRANO' : 'TARDE',
+            color: '#f59e0b'
+          }
+        ]);
+        return; // REJECT KEYPRESS - DO NOT ADVANCE!
+      }
+
       if (charToMatch === targetChar) {
-        // Correct Key Press!
+        // Correct Key Press inside timing window!
+        soundEngine.playKeyPress();
+
         let judgmentType: 'PERFECT' | 'GREAT' | 'GOOD' = 'GOOD';
         let points = 100;
         let color = '#10b981'; // Green
 
-        if (targetNote) {
-          const diff = Math.abs(targetNote.progress - 1.0);
-          if (diff < 0.12) {
-            judgmentType = 'PERFECT';
-            points = 300;
-            color = '#f59e0b'; // Gold
-          } else if (diff < 0.25) {
-            judgmentType = 'GREAT';
-            points = 200;
-            color = '#06b6d4'; // Cyan
-          }
-          // Mark note hit
-          setNotes(prev =>
-            prev.map(n => (n.id === targetNote.id ? { ...n, hit: true } : n))
-          );
-          spawnParticles(targetNote.x, targetNote.y, color);
+        const diff = Math.abs(targetNote.progress - 1.0);
+        if (diff < 0.12) {
+          judgmentType = 'PERFECT';
+          points = 300;
+          color = '#f59e0b'; // Gold
+        } else if (diff < 0.22) {
+          judgmentType = 'GREAT';
+          points = 200;
+          color = '#06b6d4'; // Cyan
         }
+
+        // Mark note as hit
+        setNotes(prev =>
+          prev.map(n => (n.id === targetNote.id ? { ...n, hit: true } : n))
+        );
+        spawnParticles(targetNote.x, targetNote.y, color);
 
         // Update Stats & Combo
         setStats(s => {
@@ -402,20 +432,18 @@ export const App: React.FC = () => {
         });
 
         // Add Judgment Text
-        if (targetNote) {
-          setJudgments(j => [
-            ...j,
-            {
-              id: `hit-${Date.now()}`,
-              type: judgmentType,
-              x: targetNote.x,
-              y: targetNote.y,
-              timestamp: Date.now(),
-              text: judgmentType,
-              color
-            }
-          ]);
-        }
+        setJudgments(j => [
+          ...j,
+          {
+            id: `hit-${Date.now()}`,
+            type: judgmentType,
+            x: targetNote.x,
+            y: targetNote.y,
+            timestamp: Date.now(),
+            text: judgmentType,
+            color
+          }
+        ]);
 
         // Advance Word Progress
         const nextTypedIndex = currentWord.typedIndex + 1;
