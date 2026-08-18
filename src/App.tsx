@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type {
   NoteNode,
   WordItem,
@@ -58,6 +58,17 @@ export const App: React.FC = () => {
     accuracy: 100
   });
 
+  // Keep refs updated for animation frame loop
+  const currentWordRef = useRef<WordItem | null>(null);
+  const upcomingWordsRef = useRef<string[]>([]);
+  const notesRef = useRef<NoteNode[]>([]);
+  const gameStateRef = useRef(gameState);
+
+  currentWordRef.current = currentWord;
+  upcomingWordsRef.current = upcomingWords;
+  notesRef.current = notes;
+  gameStateRef.current = gameState;
+
   // Auto-detect mobile touch screen on mount
   useEffect(() => {
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -66,24 +77,22 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  // Update sound engine settings when settings change
+  // Update sound engine settings
   useEffect(() => {
     soundEngine.setEnabled(settings.soundEnabled);
     soundEngine.setSfxVolume(settings.sfxVolume);
     soundEngine.setMusicVolume(settings.musicVolume);
   }, [settings]);
 
-  // Generate word queue and spawn initial note nodes
+  // Spawn notes for a new word
   const spawnWordNotes = useCallback((wordText: string, wordId: string) => {
     const newNotes: NoteNode[] = [];
     const numLanes = 5;
 
     for (let i = 0; i < wordText.length; i++) {
       const char = wordText[i];
-      // Generate lane in a natural wave path (0 to 4)
       const laneIndex = (i * 2 + Math.floor(Math.random() * 2)) % numLanes;
-      // Stagger spacing along timeline (progress < 0 means above screen view initially)
-      const initialProgress = -0.15 * i;
+      const initialProgress = -0.18 * i;
 
       newNotes.push({
         id: `${wordId}-${i}-${Date.now()}`,
@@ -100,9 +109,35 @@ export const App: React.FC = () => {
     }
 
     setNotes(newNotes);
+    notesRef.current = newNotes;
   }, []);
 
-  // Initialize a new round
+  // Advance to next word in queue
+  const advanceToNextWord = useCallback(() => {
+    const queue = upcomingWordsRef.current;
+    const nextWordText = queue[0] || getRandomWord(settings.language, settings.difficulty);
+    const newUpcoming = [
+      ...queue.slice(1),
+      getRandomWord(settings.language, settings.difficulty)
+    ];
+    const newWordId = `word-${Date.now()}`;
+
+    const newWordItem: WordItem = {
+      id: newWordId,
+      text: nextWordText,
+      typedIndex: 0,
+      isCompleted: false
+    };
+
+    setCurrentWord(newWordItem);
+    currentWordRef.current = newWordItem;
+    setUpcomingWords(newUpcoming);
+    upcomingWordsRef.current = newUpcoming;
+
+    spawnWordNotes(nextWordText, newWordId);
+  }, [settings.language, settings.difficulty, spawnWordNotes]);
+
+  // Start / Restart Game Round
   const startNewGame = useCallback(() => {
     const firstWordText = getRandomWord(settings.language, settings.difficulty);
     const firstWordId = `word-${Date.now()}`;
@@ -112,13 +147,19 @@ export const App: React.FC = () => {
       queue.push(getRandomWord(settings.language, settings.difficulty));
     }
 
-    setCurrentWord({
+    const firstWordItem: WordItem = {
       id: firstWordId,
       text: firstWordText,
       typedIndex: 0,
       isCompleted: false
-    });
+    };
+
+    setCurrentWord(firstWordItem);
+    currentWordRef.current = firstWordItem;
+
     setUpcomingWords(queue);
+    upcomingWordsRef.current = queue;
+
     spawnWordNotes(firstWordText, firstWordId);
 
     setStats({
@@ -146,16 +187,16 @@ export const App: React.FC = () => {
   // Create Spark Explosion Particles
   const spawnParticles = (x: number, y: number, color: string) => {
     const newParticles: Particle[] = [];
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 18; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 5;
+      const speed = 2 + Math.random() * 6;
       newParticles.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         color,
-        radius: 2 + Math.random() * 3,
+        radius: 2.5 + Math.random() * 3.5,
         alpha: 1.0,
         life: 0,
         maxLife: 20 + Math.random() * 15
@@ -164,7 +205,7 @@ export const App: React.FC = () => {
     setParticles(prev => [...prev, ...newParticles]);
   };
 
-  // Main Game Loop (Moving notes & particle physics)
+  // Main Animation Loop
   useEffect(() => {
     if (gameState !== 'playing') return;
 
@@ -172,19 +213,26 @@ export const App: React.FC = () => {
     let lastTime = performance.now();
 
     const update = (now: number) => {
+      if (gameStateRef.current !== 'playing') return;
+
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      // 1. Move Notes downwards
       const speedMultiplier = settings.speed * 0.45;
+
+      // 1. Move all notes downwards
       setNotes(prevNotes => {
-        return prevNotes.map(note => {
+        let shouldAdvanceWord = false;
+        const currWord = currentWordRef.current;
+
+        const updated = prevNotes.map(note => {
           if (note.hit || note.missed) return note;
 
           const newProgress = note.progress + delta * speedMultiplier;
 
-          // Check if passed strike line without being hit
-          if (newProgress > 1.15 && !note.missed) {
+          // Check if passed strike line
+          if (newProgress > 1.15) {
+            // Note missed!
             soundEngine.playHit('MISS');
             setStats(s => {
               const newTotal = s.totalLettersTyped + 1;
@@ -199,14 +247,14 @@ export const App: React.FC = () => {
               };
             });
 
-            // Judgment text
+            // Add miss judgment popup
             setJudgments(j => [
               ...j,
               {
-                id: `miss-${Date.now()}`,
+                id: `miss-${Date.now()}-${note.id}`,
                 type: 'MISS',
                 x: note.x || window.innerWidth / 2,
-                y: note.y || window.innerHeight * 0.8,
+                y: note.y || window.innerHeight * 0.72,
                 timestamp: Date.now(),
                 text: 'MISS',
                 color: '#ef4444'
@@ -218,9 +266,38 @@ export const App: React.FC = () => {
 
           return { ...note, progress: newProgress };
         });
+
+        // 2. Check active word letter progression & automatic advance
+        if (currWord) {
+          // If the note corresponding to current target letter is missed (or passed), advance target index!
+          const targetNote = updated.find(n => n.charIndex === currWord.typedIndex);
+          if (targetNote && (targetNote.missed || targetNote.progress > 1.15)) {
+            const nextIndex = currWord.typedIndex + 1;
+            if (nextIndex >= currWord.text.length) {
+              shouldAdvanceWord = true;
+            } else {
+              const updatedWord = { ...currWord, typedIndex: nextIndex };
+              setCurrentWord(updatedWord);
+              currentWordRef.current = updatedWord;
+            }
+          }
+
+          // If all notes for this word are hit or missed, advance to next word!
+          const wordNotes = updated.filter(n => n.wordId === currWord.id);
+          if (wordNotes.length > 0 && wordNotes.every(n => n.hit || n.missed)) {
+            shouldAdvanceWord = true;
+          }
+        }
+
+        if (shouldAdvanceWord) {
+          // Schedule word advancement
+          setTimeout(() => advanceToNextWord(), 10);
+        }
+
+        return updated;
       });
 
-      // 2. Update Spark Particles physics
+      // 3. Update Particles
       setParticles(prev =>
         prev
           .map(p => ({
@@ -233,10 +310,10 @@ export const App: React.FC = () => {
           .filter(p => p.life < p.maxLife)
       );
 
-      // 3. Clean up expired judgments
+      // 4. Clean up expired judgments
       setJudgments(prev => prev.filter(j => Date.now() - j.timestamp < 900));
 
-      // 4. Real-time WPM Calculation
+      // 5. Real-time WPM Calculation
       setStats(s => {
         if (!s.startTime) return s;
         const elapsedMins = (Date.now() - s.startTime) / 60000;
@@ -250,9 +327,9 @@ export const App: React.FC = () => {
 
     animId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(animId);
-  }, [gameState, settings.speed]);
+  }, [gameState, settings.speed, advanceToNextWord]);
 
-  // Handle Input Keypress (From Physical Keyboard or Virtual Touch Keyboard)
+  // Handle Input Keypress (Physical Keyboard or Touch Virtual Keyboard)
   const handleKeyPress = useCallback(
     (pressedChar: string) => {
       if (gameState !== 'playing' || !currentWord) return;
@@ -263,7 +340,7 @@ export const App: React.FC = () => {
       const targetCharIndex = currentWord.typedIndex;
       const targetChar = currentWord.text[targetCharIndex]?.toLowerCase();
 
-      // Find the unhit note corresponding to the active letter
+      // Find unhit note for active letter
       const targetNote = notes.find(
         n => !n.hit && !n.missed && n.charIndex === targetCharIndex
       );
@@ -275,12 +352,12 @@ export const App: React.FC = () => {
         let color = '#10b981'; // Green
 
         if (targetNote) {
-          const diff = Math.abs(targetNote.progress - 1.0); // 1.0 is exact strike line
-          if (diff < 0.1) {
+          const diff = Math.abs(targetNote.progress - 1.0);
+          if (diff < 0.12) {
             judgmentType = 'PERFECT';
             points = 300;
             color = '#f59e0b'; // Gold
-          } else if (diff < 0.22) {
+          } else if (diff < 0.25) {
             judgmentType = 'GREAT';
             points = 200;
             color = '#06b6d4'; // Cyan
@@ -292,7 +369,7 @@ export const App: React.FC = () => {
           spawnParticles(targetNote.x, targetNote.y, color);
         }
 
-        // Stats & Combo Update
+        // Update Stats & Combo
         setStats(s => {
           const newCombo = s.combo + 1;
           const newMaxCombo = Math.max(s.maxCombo, newCombo);
@@ -324,7 +401,7 @@ export const App: React.FC = () => {
           };
         });
 
-        // Add Judgment Text Popup
+        // Add Judgment Text
         if (targetNote) {
           setJudgments(j => [
             ...j,
@@ -344,24 +421,11 @@ export const App: React.FC = () => {
         const nextTypedIndex = currentWord.typedIndex + 1;
 
         if (nextTypedIndex >= currentWord.text.length) {
-          // Word Completed! Queue next word
-          const nextWordText = upcomingWords[0] || getRandomWord(settings.language, settings.difficulty);
-          const newUpcoming = [
-            ...upcomingWords.slice(1),
-            getRandomWord(settings.language, settings.difficulty)
-          ];
-          const newWordId = `word-${Date.now()}`;
-
-          setCurrentWord({
-            id: newWordId,
-            text: nextWordText,
-            typedIndex: 0,
-            isCompleted: false
-          });
-          setUpcomingWords(newUpcoming);
-          spawnWordNotes(nextWordText, newWordId);
+          advanceToNextWord();
         } else {
-          setCurrentWord({ ...currentWord, typedIndex: nextTypedIndex });
+          const updatedWord = { ...currentWord, typedIndex: nextTypedIndex };
+          setCurrentWord(updatedWord);
+          currentWordRef.current = updatedWord;
         }
       } else {
         // Wrong Key Press!
@@ -380,10 +444,10 @@ export const App: React.FC = () => {
         });
       }
     },
-    [gameState, currentWord, notes, upcomingWords, settings.language, settings.difficulty, spawnWordNotes]
+    [gameState, currentWord, notes, advanceToNextWord]
   );
 
-  // Listen to physical keyboard events
+  // Physical Keyboard Listener
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (gameState !== 'playing') return;
@@ -404,7 +468,6 @@ export const App: React.FC = () => {
       {gameState === 'menu' && (
         <div className="relative flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950">
           <div className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6 animate-fade-in">
-            {/* Title Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase">
               <Zap className="w-4 h-4 fill-amber-400" /> RHYTHM TYPING GAME
             </div>
@@ -417,7 +480,6 @@ export const App: React.FC = () => {
               Demuestra tu velocidad tipeando palabras al ritmo del flujo de notas estilo Guitar Hero.
             </p>
 
-            {/* Quick Controls & Settings */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={() => setSettings(s => ({ ...s, language: s.language === 'es' ? 'en' : 'es' }))}
@@ -436,7 +498,6 @@ export const App: React.FC = () => {
               </button>
             </div>
 
-            {/* Start Game Button */}
             <button
               onClick={startNewGame}
               className="w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-xl rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-wider"
@@ -449,7 +510,7 @@ export const App: React.FC = () => {
 
       {/* 2. Active Game Screen */}
       {(gameState === 'playing' || gameState === 'paused') && (
-        <div className="relative flex-1 flex flex-col overflow-hidden">
+        <div className="relative flex-1 flex flex-col h-full overflow-hidden">
           {/* Top HUD */}
           <HUD
             stats={stats}
@@ -457,10 +518,11 @@ export const App: React.FC = () => {
             isPaused={gameState === 'paused'}
             onTogglePause={() => setGameState(g => (g === 'playing' ? 'paused' : 'playing'))}
             onOpenSettings={() => setIsSettingsOpen(true)}
+            onRestart={startNewGame}
           />
 
-          {/* Rhythm Lane Canvas */}
-          <div className="flex-1 relative">
+          {/* Rhythm Lane Canvas Container */}
+          <div className="flex-1 relative w-full h-full">
             <RhythmCanvas
               notes={notes}
               judgments={judgments}
@@ -469,7 +531,7 @@ export const App: React.FC = () => {
             />
           </div>
 
-          {/* Bottom Word Stack (Target Word + Queued Upcoming Words) */}
+          {/* Bottom Word Stack (Always visible at bottom) */}
           <WordStack currentWord={currentWord} upcomingWords={upcomingWords} />
 
           {/* Optional Mobile Touch Virtual Keyboard */}

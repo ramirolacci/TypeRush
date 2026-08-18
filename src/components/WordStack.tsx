@@ -15,17 +15,17 @@ export const WordStack: React.FC<WordStackProps> = ({ currentWord, upcomingWords
   const remainingPart = text.slice(typedIndex + 1);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center py-4 bg-zinc-950/90 border-t border-zinc-800/80 shadow-2xl backdrop-blur-md z-10">
+    <div className="w-full flex flex-col items-center justify-center py-4 bg-zinc-950 border-t-2 border-zinc-800 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] z-30 select-none">
       {/* Active Target Word */}
-      <div className="relative flex items-center justify-center tracking-[0.25em] text-2xl sm:text-3xl md:text-4xl font-mono font-bold py-1 select-none">
+      <div className="relative flex items-center justify-center tracking-[0.3em] text-3xl sm:text-4xl md:text-5xl font-mono font-black py-2">
         {/* Completed Letters */}
-        <span className="text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]">
+        <span className="text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.9)]">
           {typedPart}
         </span>
 
-        {/* Current Target Letter with animated cursor underline */}
+        {/* Current Target Letter with cursor underline */}
         {currentLetter && (
-          <span className="relative text-white bg-amber-500/20 px-1 rounded border-b-4 border-amber-400 animate-pulse drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]">
+          <span className="relative text-white bg-amber-500/30 px-2 py-0.5 rounded border-b-4 border-amber-400 animate-pulse drop-shadow-[0_0_16px_rgba(255,255,255,1)]">
             {currentLetter}
           </span>
         )}
@@ -36,13 +36,13 @@ export const WordStack: React.FC<WordStackProps> = ({ currentWord, upcomingWords
         </span>
       </div>
 
-      {/* Upcoming Queued Words Stack (Just like screenshot) */}
-      <div className="flex flex-col items-center gap-1 mt-2 text-zinc-500 font-mono text-sm sm:text-base tracking-widest opacity-75 select-none">
+      {/* Upcoming Queued Words Stack */}
+      <div className="flex flex-col items-center gap-1.5 mt-2 text-zinc-400 font-mono text-base sm:text-lg tracking-[0.25em] font-semibold select-none">
         {upcomingWords.slice(0, 3).map((word, idx) => (
           <div
             key={`${word}-${idx}`}
             className="transition-all duration-300 transform hover:scale-105"
-            style={{ opacity: 1 - idx * 0.25 }}
+            style={{ opacity: 0.85 - idx * 0.25 }}
           >
             {word}
           </div>

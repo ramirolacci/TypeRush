@@ -1,6 +1,6 @@
 import React from 'react';
 import type { GameStats, Settings } from '../types/game';
-import { Settings as SettingsIcon, Pause, Play, Globe } from 'lucide-react';
+import { Settings as SettingsIcon, Pause, Play, Globe, RefreshCw } from 'lucide-react';
 
 interface HUDProps {
   stats: GameStats;
@@ -8,6 +8,7 @@ interface HUDProps {
   isPaused: boolean;
   onTogglePause: () => void;
   onOpenSettings: () => void;
+  onRestart: () => void;
   trackName?: string;
   progressPercent?: number;
 }
@@ -18,13 +19,14 @@ export const HUD: React.FC<HUDProps> = ({
   isPaused,
   onTogglePause,
   onOpenSettings,
+  onRestart,
   trackName = "TypeRush Rhythm Flow",
   progressPercent = 0
 }) => {
   return (
-    <div className="absolute top-0 left-0 right-0 p-3 sm:p-5 flex justify-between items-start pointer-events-none z-20">
+    <div className="absolute top-0 left-0 right-0 p-3 sm:p-5 flex justify-between items-start pointer-events-none z-40">
       {/* Top Left: Score & Combo Multiplier Card */}
-      <div className="pointer-events-auto bg-black/80 border border-zinc-800 rounded-lg p-3 sm:p-4 shadow-xl backdrop-blur-md min-w-[140px] sm:min-w-[180px]">
+      <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md min-w-[140px] sm:min-w-[180px]">
         <div className="text-[10px] sm:text-xs tracking-widest text-zinc-400 font-mono uppercase">SCORE</div>
         <div className="text-2xl sm:text-4xl font-black font-mono text-white tracking-wider my-1">
           {stats.score.toLocaleString()}
@@ -44,14 +46,22 @@ export const HUD: React.FC<HUDProps> = ({
         </div>
       </div>
 
-      {/* Center Controls: Pause & Quick Settings */}
-      <div className="pointer-events-auto flex items-center gap-2 bg-black/80 border border-zinc-800/90 rounded-full px-3 py-1.5 backdrop-blur-md shadow-lg">
+      {/* Center Controls: Pause, Restart & Settings */}
+      <div className="pointer-events-auto flex items-center gap-2 bg-black/90 border border-zinc-800 rounded-full px-3.5 py-2 backdrop-blur-md shadow-2xl">
         <button
           onClick={onTogglePause}
           className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
           title={isPaused ? "Resume" : "Pause"}
         >
           {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-amber-500" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
+        </button>
+
+        <button
+          onClick={onRestart}
+          className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-300 hover:text-amber-400 transition-colors"
+          title="Reiniciar / Restart"
+        >
+          <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         <div className="h-4 w-px bg-zinc-800" />
@@ -74,7 +84,7 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* Top Right: Track Info, Accuracy & WPM */}
-      <div className="pointer-events-auto bg-black/80 border border-zinc-800 rounded-lg p-3 sm:p-4 shadow-xl backdrop-blur-md text-right min-w-[150px] sm:min-w-[200px]">
+      <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md text-right min-w-[150px] sm:min-w-[200px]">
         <div className="text-[10px] sm:text-xs font-mono text-zinc-300 font-semibold truncate max-w-[160px] sm:max-w-[220px]">
           {trackName}
         </div>
