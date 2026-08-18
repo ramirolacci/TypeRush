@@ -510,7 +510,7 @@ export const App: React.FC = () => {
 
       {/* 2. Active Game Screen */}
       {(gameState === 'playing' || gameState === 'paused') && (
-        <div className="relative flex-1 flex flex-col h-full overflow-hidden">
+        <div className="relative flex-1 w-full h-full overflow-hidden bg-slate-950">
           {/* Top HUD */}
           <HUD
             stats={stats}
@@ -521,8 +521,8 @@ export const App: React.FC = () => {
             onRestart={startNewGame}
           />
 
-          {/* Rhythm Lane Canvas Container */}
-          <div className="flex-1 relative w-full h-full">
+          {/* Rhythm Lane Canvas Container (Fills screen) */}
+          <div className="w-full h-full">
             <RhythmCanvas
               notes={notes}
               judgments={judgments}
@@ -531,16 +531,22 @@ export const App: React.FC = () => {
             />
           </div>
 
-          {/* Bottom Word Stack (Always visible at bottom) */}
-          <WordStack currentWord={currentWord} upcomingWords={upcomingWords} />
+          {/* Bottom Word Stack (Floating overlay at bottom center) */}
+          <WordStack
+            currentWord={currentWord}
+            upcomingWords={upcomingWords}
+            hasMobileKeyboard={settings.showMobileKeyboard}
+          />
 
           {/* Optional Mobile Touch Virtual Keyboard */}
           {settings.showMobileKeyboard && (
-            <MobileKeyboard
-              targetChar={targetChar}
-              onKeyPress={handleKeyPress}
-              language={settings.language}
-            />
+            <div className="absolute bottom-0 left-0 right-0 z-40">
+              <MobileKeyboard
+                targetChar={targetChar}
+                onKeyPress={handleKeyPress}
+                language={settings.language}
+              />
+            </div>
           )}
         </div>
       )}
