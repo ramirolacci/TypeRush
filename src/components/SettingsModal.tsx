@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { Settings, Difficulty, GameMode } from '../types/game';
+import { animationService } from '../services/animation';
 import { X, Volume2, Globe, Zap, Sliders, Smartphone, Music, Gamepad2, AlignLeft } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -13,9 +14,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateSettings,
   onClose
 }) => {
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    animationService.animateModalPopup(modalRef.current);
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in select-none">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative text-white">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 select-none">
+      <div ref={modalRef} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative text-white">
         {/* Header */}
         <div className="flex justify-between items-center pb-4 border-b border-zinc-800">
           <div className="flex items-center gap-2">

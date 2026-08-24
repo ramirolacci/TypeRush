@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { GameStats } from '../types/game';
+import { animationService } from '../services/animation';
 import confetti from 'canvas-confetti';
 import { Trophy, RefreshCw, Flame, Target, Award } from 'lucide-react';
 
@@ -9,7 +10,13 @@ interface GameOverModalProps {
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart }) => {
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const scoreRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
+    animationService.animateModalPopup(modalRef.current);
+    animationService.animateScoreCounter(scoreRef.current, stats.score);
+
     if (stats.accuracy > 80) {
       confetti({
         particleCount: 100,
@@ -17,11 +24,11 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart }
         origin: { y: 0.6 }
       });
     }
-  }, [stats.accuracy]);
+  }, [stats.accuracy, stats.score]);
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in select-none">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-center">
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 select-none">
+      <div ref={modalRef} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-center">
         {/* Header Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-mono font-bold uppercase mb-3">
           <Trophy className="w-4 h-4" /> FIN DEL TIEMPO / GAME OVER
@@ -33,8 +40,8 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, onRestart }
 
         {/* Final Score */}
         <div className="text-xs font-mono text-zinc-400 uppercase tracking-widest">PUNTAJE FINAL / FINAL SCORE</div>
-        <div className="text-4xl sm:text-5xl font-black font-mono text-white tracking-wider my-2 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
-          {stats.score.toLocaleString()}
+        <div ref={scoreRef} className="text-4xl sm:text-5xl font-black font-mono text-white tracking-wider my-2 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+          0
         </div>
 
         {/* Highlight Cards Grid */}

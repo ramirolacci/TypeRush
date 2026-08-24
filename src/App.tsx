@@ -9,6 +9,7 @@ import type {
 } from './types/game';
 import { getRandomWord } from './data/dictionaries';
 import { soundEngine } from './services/audio';
+import { animationService } from './services/animation';
 import { RhythmCanvas } from './components/RhythmCanvas';
 import { WordStack } from './components/WordStack';
 import { ParagraphView } from './components/ParagraphView';
@@ -21,6 +22,7 @@ import { Play, Globe, Zap, Keyboard, AlignLeft, Gamepad2 } from 'lucide-react';
 export const App: React.FC = () => {
   // Game States
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'paused' | 'gameover'>('menu');
+  const menuContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Settings
   const [settings, setSettings] = useState<Settings>({
@@ -501,26 +503,36 @@ export const App: React.FC = () => {
     }
   };
 
+  // GSAP Menu Entrance Animation
+  useEffect(() => {
+    if (gameState === 'menu') {
+      animationService.animateMenuEntrance(menuContainerRef.current);
+    }
+  }, [gameState]);
+
   return (
     <div className="w-screen h-screen flex flex-col bg-slate-950 text-white font-sans overflow-hidden select-none">
       {/* 1. Main Landing Menu View */}
       {gameState === 'menu' && (
         <div className="relative flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950">
-          <div className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase">
+          <div
+            ref={menuContainerRef}
+            className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6"
+          >
+            <div className="animate-gsap-item inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase">
               <Zap className="w-4 h-4 fill-amber-400" /> MULTI-MODE TYPING GAME
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-black font-mono tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(245,158,11,0.4)]">
+            <h1 className="animate-gsap-item text-4xl sm:text-5xl font-black font-mono tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(245,158,11,0.4)]">
               TYPE RUSH
             </h1>
 
-            <p className="text-zinc-400 text-sm font-mono leading-relaxed">
+            <p className="animate-gsap-item text-zinc-400 text-sm font-mono leading-relaxed">
               Elige tu modo favorito: velocidad por carriles rítmicos o contrarreloj de minitextos.
             </p>
 
             {/* Game Mode Picker Tabs on Main Menu */}
-            <div className="grid grid-cols-2 gap-2 bg-zinc-950/80 p-1.5 rounded-2xl border border-zinc-800">
+            <div className="animate-gsap-item grid grid-cols-2 gap-2 bg-zinc-950/80 p-1.5 rounded-2xl border border-zinc-800">
               <button
                 onClick={() => setSettings(s => ({ ...s, gameMode: 'rhythm' }))}
                 className={`py-2.5 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
@@ -543,7 +555,7 @@ export const App: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-1">
+            <div className="animate-gsap-item grid grid-cols-2 gap-3 pt-1">
               <button
                 onClick={() => setSettings(s => ({ ...s, language: s.language === 'es' ? 'en' : 'es' }))}
                 className="py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-sm font-mono font-bold flex items-center justify-center gap-2 transition-all"
@@ -563,7 +575,7 @@ export const App: React.FC = () => {
 
             <button
               onClick={startNewGame}
-              className="w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-xl rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-wider"
+              className="animate-gsap-item w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-xl rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-wider"
             >
               <Play className="w-6 h-6 fill-black" /> EMPEZAR / START RUSH
             </button>

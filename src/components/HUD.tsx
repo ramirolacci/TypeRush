@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { GameStats, Settings } from '../types/game';
+import { animationService } from '../services/animation';
 import { Settings as SettingsIcon, Pause, Play, Globe, RefreshCw, Heart, Zap } from 'lucide-react';
 
 interface HUDProps {
@@ -19,6 +20,14 @@ export const HUD: React.FC<HUDProps> = ({
   onOpenSettings,
   onRestart
 }) => {
+  const comboRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (stats.combo > 0) {
+      animationService.animateComboPunch(comboRef.current);
+    }
+  }, [stats.combo, stats.multiplier]);
+
   return (
     <div className="absolute top-0 left-0 right-0 p-3 sm:p-5 flex justify-between items-start pointer-events-none z-40">
       {/* Top Left: Score, Combo & Lives Counter */}
@@ -30,7 +39,7 @@ export const HUD: React.FC<HUDProps> = ({
 
         {/* Combo Multiplier Bar */}
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs sm:text-sm font-bold font-mono text-amber-500">
+          <span ref={comboRef} className="text-xs sm:text-sm font-bold font-mono text-amber-500 inline-block">
             x{stats.multiplier}
           </span>
           <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">

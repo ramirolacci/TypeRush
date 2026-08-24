@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Settings, GameStats } from '../types/game';
 import { getRandomParagraph, type ParagraphItem } from '../data/paragraphs';
 import { soundEngine } from '../services/audio';
+import { animationService } from '../services/animation';
 import confetti from 'canvas-confetti';
 import { Sparkles, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
 
@@ -24,6 +25,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   isPaused,
   onKeyPressRegister
 }) => {
+  const timerRef = useRef<HTMLDivElement | null>(null);
   // Current Paragraph State
   const [paragraph, setParagraph] = useState<ParagraphItem>(() =>
     getRandomParagraph(settings.language, settings.difficulty)
@@ -116,6 +118,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         });
       } else {
         soundEngine.playHit('MISS');
+        animationService.animateTimerShake(timerRef.current);
         onUpdateStats(s => {
           const newTotal = s.totalLettersTyped + 1;
           return {
@@ -298,6 +301,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
           </div>
 
           <div
+            ref={timerRef}
             className={`text-5xl sm:text-7xl font-black font-mono transition-all duration-300 ${
               isTimeLow
                 ? 'text-rose-500 animate-ping scale-110 drop-shadow-[0_0_25px_rgba(244,63,94,0.8)]'
