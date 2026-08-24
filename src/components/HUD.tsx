@@ -105,15 +105,20 @@ export const HUD: React.FC<HUDProps> = ({
         </button>
       </div>
 
-      {/* Top Right: Speed, Accuracy & WPM */}
+      {/* Top Right: Level, Speed, Accuracy & WPM */}
       <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md text-right min-w-[150px] sm:min-w-[200px]">
-        <div className="flex items-center justify-end gap-1.5 text-[10px] sm:text-xs font-mono text-amber-400 font-bold uppercase">
-          <Zap className="w-3 h-3 text-amber-400" />
+        {/* Active Level Badge */}
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-mono font-bold uppercase mb-1">
+          <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+          {t.levelLabel} {stats.level || 1}
+        </div>
+
+        <div className="flex items-center justify-end gap-1.5 text-[10px] sm:text-xs font-mono text-zinc-300 font-bold uppercase">
           {t.speed}: {((stats.currentSpeed || 0.7) * 1.2).toFixed(1)}x
         </div>
 
         {/* Accuracy % */}
-        <div className="text-xl sm:text-3xl font-black font-mono text-white mt-1">
+        <div className="text-xl sm:text-3xl font-black font-mono text-white mt-0.5">
           {stats.accuracy.toFixed(1)} <span className="text-sm font-normal">%</span>
         </div>
 
@@ -122,11 +127,21 @@ export const HUD: React.FC<HUDProps> = ({
           WPM: <span className="text-white font-bold">{stats.wpm}</span>
         </div>
 
-        {/* Progress Bar */}
+        {/* Level Progress Bar */}
         <div className="w-full h-1 bg-zinc-800 rounded-full mt-2 overflow-hidden">
           <div
-            className="h-full bg-amber-500 transition-all duration-300"
-            style={{ width: `${Math.min(100, ((stats.currentSpeed || 0.7) / 1.6) * 100)}%` }}
+            className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300"
+            style={{
+              width: `${
+                stats.completedWordsCount >= 18
+                  ? 100
+                  : stats.completedWordsCount >= 10
+                  ? 66 + ((stats.completedWordsCount - 10) / 8) * 34
+                  : stats.completedWordsCount >= 4
+                  ? 33 + ((stats.completedWordsCount - 4) / 6) * 33
+                  : (stats.completedWordsCount / 4) * 33
+              }%`
+            }}
           />
         </div>
       </div>

@@ -59,21 +59,29 @@ export const App: React.FC = () => {
     currentSpeed: 0.7,
     totalLettersTyped: 0,
     correctLettersTyped: 0,
+    completedWordsCount: 0,
+    level: 1,
+    activeDifficulty: 'easy',
     startTime: null,
     wpm: 0,
     accuracy: 100
   });
+
+  const [levelUpInfo, setLevelUpInfo] = useState<{ level: number; difficulty: string } | null>(null);
+  const levelUpBannerRef = useRef<HTMLDivElement | null>(null);
 
   // Keep refs updated for animation frame loop
   const currentWordRef = useRef<WordItem | null>(null);
   const upcomingWordsRef = useRef<string[]>([]);
   const notesRef = useRef<NoteNode[]>([]);
   const gameStateRef = useRef(gameState);
+  const statsRef = useRef(stats);
 
   currentWordRef.current = currentWord;
   upcomingWordsRef.current = upcomingWords;
   notesRef.current = notes;
   gameStateRef.current = gameState;
+  statsRef.current = stats;
 
   // Auto-detect mobile touch screen on mount
   useEffect(() => {
@@ -121,10 +129,12 @@ export const App: React.FC = () => {
   // Advance to next word in queue
   const advanceToNextWord = useCallback(() => {
     const queue = upcomingWordsRef.current;
-    const nextWordText = queue[0] || getRandomWord(settings.language, settings.difficulty);
+    const activeDiff = statsRef.current.activeDifficulty || 'easy';
+
+    const nextWordText = queue[0] || getRandomWord(settings.language, activeDiff);
     const newUpcoming = [
       ...queue.slice(1),
-      getRandomWord(settings.language, settings.difficulty)
+      getRandomWord(settings.language, activeDiff)
     ];
     const newWordId = `word-${Date.now()}`;
 
@@ -141,18 +151,18 @@ export const App: React.FC = () => {
     upcomingWordsRef.current = newUpcoming;
 
     spawnWordNotes(nextWordText, newWordId);
-  }, [settings.language, settings.difficulty, spawnWordNotes]);
+  }, [settings.language, spawnWordNotes]);
 
   const hasAdvancedRef = useRef(false);
 
   // Start / Restart Game Round
   const startNewGame = useCallback(() => {
-    const firstWordText = getRandomWord(settings.language, settings.difficulty);
+    const firstWordText = getRandomWord(settings.language, 'easy');
     const firstWordId = `word-${Date.now()}`;
 
     const queue: string[] = [];
     for (let i = 0; i < 6; i++) {
-      queue.push(getRandomWord(settings.language, settings.difficulty));
+      queue.push(getRandomWord(settings.language, 'easy'));
     }
 
     const firstWordItem: WordItem = {
@@ -171,6 +181,7 @@ export const App: React.FC = () => {
     spawnWordNotes(firstWordText, firstWordId);
 
     hasAdvancedRef.current = false;
+    setLevelUpInfo(null);
 
     setStats({
       score: 0,
@@ -185,6 +196,9 @@ export const App: React.FC = () => {
       currentSpeed: 0.7,
       totalLettersTyped: 0,
       correctLettersTyped: 0,
+      completedWordsCount: 0,
+      level: 1,
+      activeDifficulty: 'easy',
       startTime: Date.now(),
       wpm: 0,
       accuracy: 100
@@ -193,7 +207,7 @@ export const App: React.FC = () => {
     setJudgments([]);
     setParticles([]);
     setGameState('playing');
-  }, [settings.language, settings.difficulty, spawnWordNotes]);
+  }, [settings.language, spawnWordNotes]);
 
   // Create Spark Explosion Particles
   const spawnParticles = (x: number, y: number, color: string) => {
@@ -293,11 +307,47 @@ export const App: React.FC = () => {
               };
             });
           } else {
-            // Word completed successfully! Gradually increase speed up to 1.6 cap
-            setStats(s => ({
-              ...s,
-              currentSpeed: Math.min(1.6, s.currentSpeed + 0.025)
-            }));
+            // Word completed successfully! Evaluate dynamic level progression
+            setStats(s => {
+              const newCompletedWords = (s.completedWordsCount || 0) + 1;
+              let newLevel = 1;
+              let newDifficulty: Difficulty = 'easy';
+              let newSpeed = 0.7;
+
+              if (newCompletedWords >= 18) {
+                newLevel = 4;
+                newDifficulty = 'expert';
+                newSpeed = 1.85;
+              } else if (newCompletedWords >= 10) {
+                newLevel = 3;
+                newDifficulty = 'hard';
+                newSpeed = 1.45;
+              } else if (newCompletedWords >= 4) {
+                newLevel = 2;
+                newDifficulty = 'medium';
+                newSpeed = 1.05;
+              } else {
+                newLevel = 1;
+                newDifficulty = 'easy';
+                newSpeed = Math.min(1.0, 0.7 + newCompletedWords * 0.08);
+              }
+
+              if (newLevel > (s.level || 1)) {
+                soundEngine.playComboUp(4);
+                setLevelUpInfo({ level: newLevel, difficulty: newDifficulty });
+                setTimeout(() => {
+                  animationService.animateLevelUpBanner(levelUpBannerRef.current);
+                }, 30);
+              }
+
+              return {
+                ...s,
+                completedWordsCount: newCompletedWords,
+                level: newLevel,
+                activeDifficulty: newDifficulty,
+                currentSpeed: newSpeed
+              };
+            });
           }
 
           setTimeout(() => {
@@ -590,6 +640,26 @@ export const App: React.FC = () => {
       {/* 2. Active Game Screen */}
       {(gameState === 'playing' || gameState === 'paused') && (
         <div className="relative flex-1 w-full h-full overflow-hidden bg-slate-950">
+          {/* Level Up Notification Banner */}
+          {levelUpInfo && (
+            <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+              <div
+                ref={levelUpBannerRef}
+                className="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 border-2 border-yellow-200 text-black px-6 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md"
+              >
+                <Zap className="w-6 h-6 fill-black animate-bounce" />
+                <div className="text-center">
+                  <div className="text-base font-black font-mono tracking-wider uppercase">
+                    {t.levelUpTitle} &bull; {t.levelLabel} {levelUpInfo.level}
+                  </div>
+                  <div className="text-xs font-mono font-bold text-zinc-900">
+                    {t.levelUpDesc}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Top HUD */}
           <HUD
             stats={stats}

@@ -56,6 +56,11 @@ export const TRANSLATIONS: Record<Language, {
   // Mobile Keyboard
   spaceKey: string;
   backspaceKey: string;
+
+  // Level Progression
+  levelLabel: string;
+  levelUpTitle: string;
+  levelUpDesc: string;
 }> = {
   es: {
     // Main Menu
@@ -112,7 +117,12 @@ export const TRANSLATIONS: Record<Language, {
 
     // Mobile Keyboard
     spaceKey: 'ESPACIO',
-    backspaceKey: 'BORRAR'
+    backspaceKey: 'BORRAR',
+
+    // Level Progression
+    levelLabel: 'NIVEL',
+    levelUpTitle: '¡SUBIDA DE NIVEL!',
+    levelUpDesc: 'Palabras más largas y mayor velocidad de caída'
   },
   en: {
     // Main Menu
@@ -169,6 +179,11 @@ export const TRANSLATIONS: Record<Language, {
 
     // Mobile Keyboard
     spaceKey: 'SPACE',
-    backspaceKey: 'BACKSPACE'
+    backspaceKey: 'BACKSPACE',
+
+    // Level Progression
+    levelLabel: 'LEVEL',
+    levelUpTitle: 'LEVEL UP!',
+    levelUpDesc: 'Longer words and faster falling speed'
   }
 };

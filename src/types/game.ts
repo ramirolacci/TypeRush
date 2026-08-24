@@ -62,6 +62,9 @@ export interface GameStats {
   totalLettersTyped: number;
   correctLettersTyped: number;
   completedParagraphs?: number;
+  completedWordsCount: number;
+  level: number;
+  activeDifficulty: Difficulty;
   startTime: number | null;
   wpm: number;
   accuracy: number;

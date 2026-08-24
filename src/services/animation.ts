@@ -113,6 +113,35 @@ class AnimationService {
   }
 
   /**
+   * Animates the Level Up celebration banner with a punchy bounce and fade out.
+   */
+  public animateLevelUpBanner(banner: HTMLElement | null) {
+    if (!banner) return;
+
+    gsap.fromTo(
+      banner,
+      { y: -60, opacity: 0, scale: 0.7 },
+      {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 0.6,
+        ease: 'back.out(1.8)',
+        onComplete: () => {
+          gsap.to(banner, {
+            y: -30,
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.5,
+            delay: 1.4,
+            ease: 'power2.in'
+          });
+        }
+      }
+    );
+  }
+
+  /**
    * Spawns a floating GSAP feedback text (e.g., "+300 PERFECT", "PERFECT!") at (x, y).
    */
   public spawnFloatingText(x: number, y: number, text: string, color: string = '#f59e0b') {
