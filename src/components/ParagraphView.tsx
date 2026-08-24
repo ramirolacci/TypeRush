@@ -45,16 +45,18 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   // Streak of paragraphs completed in current run
   const [paragraphCount, setParagraphCount] = useState<number>(1);
 
-  // Keep refs for event listeners
+  // Keep refs for event listeners and callbacks
   const userInputRef = useRef(userInput);
   const paragraphRef = useRef(paragraph);
   const isPausedRef = useRef(isPaused);
   const isCompletedRef = useRef(isCompleted);
+  const onTimeOutRef = useRef(onTimeOut);
 
   userInputRef.current = userInput;
   paragraphRef.current = paragraph;
   isPausedRef.current = isPaused;
   isCompletedRef.current = isCompleted;
+  onTimeOutRef.current = onTimeOut;
 
   // Load a fresh paragraph
   const loadNextParagraph = useCallback(() => {
@@ -184,7 +186,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         if (prev <= 0.1) {
           clearInterval(timer);
           soundEngine.playHit('MISS');
-          onTimeOut();
+          onTimeOutRef.current();
           return 0;
         }
         return Math.max(0, parseFloat((prev - 0.1).toFixed(1)));
@@ -192,7 +194,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
     }, 100);
 
     return () => clearInterval(timer);
-  }, [isPaused, isCompleted, onTimeOut]);
+  }, [isPaused, isCompleted]);
 
   // Calculate current word index for top progress header (e.g. 2/25)
   const currentWordIndex = Math.min(
@@ -297,24 +299,38 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
           )}
         </div>
 
-        {/* Dynamic Countdown Timer Display (Matching screenshot large bottom countdown) */}
-        <div className="flex flex-col items-center space-y-1">
+        {/* Dynamic Countdown Timer Display */}
+        <div className="flex flex-col items-center space-y-2 w-full max-w-sm">
           <div className="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
-            <Zap className="w-4 h-4 text-amber-500" /> {t.timeRemaining}
+            <Zap className="w-4 h-4 text-amber-500 animate-bounce" /> {t.timeRemaining}
           </div>
 
           <div
             ref={timerRef}
-            className={`text-5xl sm:text-7xl font-black font-mono transition-all duration-300 ${
+            className={`text-5xl sm:text-7xl font-black font-mono transition-all duration-150 ${
               isTimeLow
-                ? 'text-rose-500 animate-ping scale-110 drop-shadow-[0_0_25px_rgba(244,63,94,0.8)]'
+                ? 'text-rose-500 scale-110 drop-shadow-[0_0_25px_rgba(244,63,94,0.8)] animate-pulse'
                 : 'text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]'
             }`}
           >
             {timeLeft.toFixed(1)}s
           </div>
 
-          <p className="text-xs font-mono text-zinc-500 pt-2">
+          {/* Animated Glowing Progress Bar */}
+          <div className="w-full h-2 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+            <div
+              className={`h-full rounded-full transition-all duration-100 ${
+                isTimeLow
+                  ? 'bg-gradient-to-r from-rose-600 to-red-500 shadow-[0_0_12px_#f43f5e]'
+                  : 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_10px_#f59e0b]'
+              }`}
+              style={{
+                width: `${Math.max(0, Math.min(100, (timeLeft / paragraph.timeLimitSeconds) * 100))}%`
+              }}
+            />
+          </div>
+
+          <p className="text-xs font-mono text-zinc-500 pt-1">
             {t.assignedTime} <span className="text-zinc-300 font-bold">{paragraph.timeLimitSeconds}s</span> ({paragraph.totalChars} {t.characters})
           </p>
         </div>
