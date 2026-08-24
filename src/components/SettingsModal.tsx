@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import type { Settings, Difficulty, GameMode } from '../types/game';
+import type { Settings, Difficulty } from '../types/game';
+import { TRANSLATIONS } from '../data/translations';
 import { animationService } from '../services/animation';
 import { X, Volume2, Globe, Zap, Sliders, Smartphone, Music, Gamepad2, AlignLeft } from 'lucide-react';
 
@@ -15,6 +16,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const t = TRANSLATIONS[settings.language];
+
+  const difficultyNames: Record<Difficulty, string> = {
+    easy: t.diffEasy,
+    medium: t.diffMedium,
+    hard: t.diffHard,
+    expert: t.diffExpert
+  };
 
   useEffect(() => {
     animationService.animateModalPopup(modalRef.current);
@@ -27,7 +36,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="flex justify-between items-center pb-4 border-b border-zinc-800">
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-amber-500" />
-            <h2 className="text-xl font-bold font-mono tracking-wider">CONFIGURACIÓN / SETTINGS</h2>
+            <h2 className="text-xl font-bold font-mono tracking-wider">{t.settingsTitle}</h2>
           </div>
           <button
             onClick={onClose}
@@ -41,7 +50,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Modo de Juego / Game Mode */}
           <div>
             <label className="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-2 uppercase">
-              <Gamepad2 className="w-4 h-4 text-amber-500" /> Modo de Juego / Game Mode
+              <Gamepad2 className="w-4 h-4 text-amber-500" /> {t.gameModeLabel}
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -52,7 +61,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     : 'bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
                 }`}
               >
-                <Zap className="w-3.5 h-3.5" /> 🎸 Rhythm Rush
+                <Zap className="w-3.5 h-3.5" /> ⚡ {t.modeTypeRush}
               </button>
 
               <button
@@ -63,7 +72,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     : 'bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
                 }`}
               >
-                <AlignLeft className="w-3.5 h-3.5" /> ⏱️ Time Rush
+                <AlignLeft className="w-3.5 h-3.5" /> ⏱️ {t.modeWordSprint}
               </button>
             </div>
           </div>
@@ -71,7 +80,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 1. Language Option (Español / English) */}
           <div>
             <label className="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-2 uppercase">
-              <Globe className="w-4 h-4 text-amber-500" /> Idioma / Language
+              <Globe className="w-4 h-4 text-amber-500" /> {t.languageLabel}
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -100,7 +109,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 2. Difficulty Level */}
           <div>
             <label className="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-2 uppercase">
-              <Zap className="w-4 h-4 text-amber-500" /> Dificultad / Difficulty
+              <Zap className="w-4 h-4 text-amber-500" /> {t.difficultyLabel}
             </label>
             <div className="grid grid-cols-4 gap-1.5">
               {(['easy', 'medium', 'hard', 'expert'] as Difficulty[]).map((diff) => (
@@ -113,7 +122,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       : 'bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 border-zinc-700'
                   }`}
                 >
-                  {diff}
+                  {difficultyNames[diff]}
                 </button>
               ))}
             </div>
@@ -122,7 +131,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 3. Falling Speed Multiplier */}
           <div>
             <div className="flex justify-between text-xs font-mono text-zinc-400 mb-1">
-              <span>VELOCIDAD / SPEED</span>
+              <span>{t.speedLabel}</span>
               <span className="text-amber-400 font-bold">{settings.speed}x</span>
             </div>
             <input
@@ -141,7 +150,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div>
               <div className="flex justify-between text-xs font-mono text-zinc-400 mb-1">
                 <span className="flex items-center gap-1.5">
-                  <Volume2 className="w-3.5 h-3.5 text-amber-500" /> SFX (TECLADO / IMPACTO)
+                  <Volume2 className="w-3.5 h-3.5 text-amber-500" /> {t.sfxLabel}
                 </span>
                 <span className="text-zinc-300 font-bold">{Math.round(settings.sfxVolume * 100)}%</span>
               </div>
@@ -159,7 +168,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div>
               <div className="flex justify-between text-xs font-mono text-zinc-400 mb-1">
                 <span className="flex items-center gap-1.5">
-                  <Music className="w-3.5 h-3.5 text-amber-500" /> MÚSICA / RHYTHM BEAT
+                  <Music className="w-3.5 h-3.5 text-amber-500" /> {t.musicLabel}
                 </span>
                 <span className="text-zinc-300 font-bold">{Math.round(settings.musicVolume * 100)}%</span>
               </div>
@@ -178,7 +187,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 5. Mobile Virtual Keyboard Toggle */}
           <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
             <span className="flex items-center gap-2 text-xs font-mono text-zinc-300">
-              <Smartphone className="w-4 h-4 text-amber-500" /> TECLADO TÁCTIL EN PANTALLA
+              <Smartphone className="w-4 h-4 text-amber-500" /> {t.touchKeyboardLabel}
             </span>
             <button
               onClick={() => onUpdateSettings({ showMobileKeyboard: !settings.showMobileKeyboard })}
@@ -199,7 +208,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           onClick={onClose}
           className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-mono font-bold rounded-xl shadow-lg hover:brightness-110 transition-all uppercase tracking-wider mt-2"
         >
-          GUARDAR Y CONTINUAR
+          {t.saveAndContinue}
         </button>
       </div>
     </div>

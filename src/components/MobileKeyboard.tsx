@@ -1,4 +1,5 @@
 import React from 'react';
+import { TRANSLATIONS } from '../data/translations';
 
 interface MobileKeyboardProps {
   targetChar: string | null;
@@ -25,6 +26,7 @@ export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
 }) => {
   const rows = language === 'es' ? KEYBOARD_ROWS_ES : KEYBOARD_ROWS_EN;
   const activeChar = targetChar?.toLowerCase() || null;
+  const t = TRANSLATIONS[language];
 
   return (
     <div className="w-full bg-zinc-950/95 border-t border-zinc-800 p-2 select-none z-20 pb-safe">
@@ -58,13 +60,13 @@ export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
             onClick={() => onKeyPress(' ')}
             className="flex-2 py-2 px-6 bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 rounded-lg font-mono text-xs font-bold border border-zinc-700"
           >
-            ESPACIO / SPACE
+            {t.spaceKey}
           </button>
           <button
             onClick={() => onKeyPress('Backspace')}
             className="flex-1 py-2 px-4 bg-rose-950/80 hover:bg-rose-900/80 text-rose-300 rounded-lg font-mono text-xs font-bold border border-rose-800"
           >
-            ⌫ BORRAR
+            ⌫ {t.backspaceKey}
           </button>
         </div>
       </div>

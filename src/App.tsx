@@ -8,6 +8,7 @@ import type {
   Settings
 } from './types/game';
 import { getRandomWord } from './data/dictionaries';
+import { TRANSLATIONS } from './data/translations';
 import { soundEngine } from './services/audio';
 import { animationService } from './services/animation';
 import { RhythmCanvas } from './components/RhythmCanvas';
@@ -503,6 +504,8 @@ export const App: React.FC = () => {
     }
   };
 
+  const t = TRANSLATIONS[settings.language];
+
   // GSAP Menu Entrance Animation
   useEffect(() => {
     if (gameState === 'menu') {
@@ -520,7 +523,7 @@ export const App: React.FC = () => {
             className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6"
           >
             <div className="animate-gsap-item inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase">
-              <Zap className="w-4 h-4 fill-amber-400" /> MULTI-MODE TYPING GAME
+              <Zap className="w-4 h-4 fill-amber-400" /> {t.menuBadge}
             </div>
 
             <h1 className="animate-gsap-item text-4xl sm:text-5xl font-black font-mono tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(245,158,11,0.4)]">
@@ -528,7 +531,7 @@ export const App: React.FC = () => {
             </h1>
 
             <p className="animate-gsap-item text-zinc-400 text-sm font-mono leading-relaxed">
-              Elige tu modo favorito: velocidad por carriles rítmicos o contrarreloj de minitextos.
+              {t.menuDescription}
             </p>
 
             {/* Game Mode Picker Tabs on Main Menu */}
@@ -541,8 +544,9 @@ export const App: React.FC = () => {
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                <Zap className="w-3.5 h-3.5" /> Rhythm Rush
+                <Zap className="w-3.5 h-3.5" /> {t.modeTypeRush}
               </button>
+
               <button
                 onClick={() => setSettings(s => ({ ...s, gameMode: 'paragraph' }))}
                 className={`py-2.5 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
@@ -551,7 +555,7 @@ export const App: React.FC = () => {
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                <AlignLeft className="w-3.5 h-3.5" /> Time Rush
+                <AlignLeft className="w-3.5 h-3.5" /> {t.modeWordSprint}
               </button>
             </div>
 
@@ -561,7 +565,7 @@ export const App: React.FC = () => {
                 className="py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-sm font-mono font-bold flex items-center justify-center gap-2 transition-all"
               >
                 <Globe className="w-4 h-4 text-amber-400" />
-                {settings.language === 'es' ? '🇪🇸 ESPAÑOL' : '🇺🇸 ENGLISH'}
+                {t.languageName}
               </button>
 
               <button
@@ -569,7 +573,7 @@ export const App: React.FC = () => {
                 className="py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-sm font-mono font-bold flex items-center justify-center gap-2 transition-all"
               >
                 <Keyboard className="w-4 h-4 text-cyan-400" />
-                OPCIONES
+                {t.options}
               </button>
             </div>
 
@@ -577,7 +581,7 @@ export const App: React.FC = () => {
               onClick={startNewGame}
               className="animate-gsap-item w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-xl rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-wider"
             >
-              <Play className="w-6 h-6 fill-black" /> EMPEZAR / START RUSH
+              <Play className="w-6 h-6 fill-black" /> {t.start}
             </button>
           </div>
         </div>
@@ -660,7 +664,7 @@ export const App: React.FC = () => {
 
       {/* 4. Game Over Modal */}
       {gameState === 'gameover' && (
-        <GameOverModal stats={stats} onRestart={startNewGame} />
+        <GameOverModal stats={stats} language={settings.language} onRestart={startNewGame} />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import type { GameStats, Settings } from '../types/game';
+import { TRANSLATIONS } from '../data/translations';
 import { animationService } from '../services/animation';
 import { Settings as SettingsIcon, Pause, Play, Globe, RefreshCw, Heart, Zap } from 'lucide-react';
 
@@ -21,6 +22,7 @@ export const HUD: React.FC<HUDProps> = ({
   onRestart
 }) => {
   const comboRef = useRef<HTMLSpanElement | null>(null);
+  const t = TRANSLATIONS[settings.language];
 
   useEffect(() => {
     if (stats.combo > 0) {
@@ -32,7 +34,7 @@ export const HUD: React.FC<HUDProps> = ({
     <div className="absolute top-0 left-0 right-0 p-3 sm:p-5 flex justify-between items-start pointer-events-none z-40">
       {/* Top Left: Score, Combo & Lives Counter */}
       <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md min-w-[140px] sm:min-w-[190px]">
-        <div className="text-[10px] sm:text-xs tracking-widest text-zinc-400 font-mono uppercase">SCORE</div>
+        <div className="text-[10px] sm:text-xs tracking-widest text-zinc-400 font-mono uppercase">{t.score}</div>
         <div className="text-2xl sm:text-4xl font-black font-mono text-white tracking-wider my-0.5">
           {stats.score.toLocaleString()}
         </div>
@@ -52,7 +54,7 @@ export const HUD: React.FC<HUDProps> = ({
 
         {/* 3-Lives Counter System */}
         <div className="flex items-center justify-between gap-1.5 mt-2 pt-2 border-t border-zinc-800/80">
-          <span className="text-[10px] font-mono uppercase text-zinc-400 font-bold">VIDAS:</span>
+          <span className="text-[10px] font-mono uppercase text-zinc-400 font-bold">{t.lives}:</span>
           <div className="flex items-center gap-1">
             {[0, 1, 2].map((idx) => {
               const isLost = idx < (stats.missedWordsCount || 0);
@@ -74,7 +76,6 @@ export const HUD: React.FC<HUDProps> = ({
         <button
           onClick={onTogglePause}
           className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
-          title={isPaused ? "Resume" : "Pause"}
         >
           {isPaused ? <Play className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-amber-500" /> : <Pause className="w-4 h-4 sm:w-5 sm:h-5" />}
         </button>
@@ -82,7 +83,6 @@ export const HUD: React.FC<HUDProps> = ({
         <button
           onClick={onRestart}
           className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-300 hover:text-amber-400 transition-colors"
-          title="Reiniciar / Restart"
         >
           <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
@@ -100,7 +100,6 @@ export const HUD: React.FC<HUDProps> = ({
         <button
           onClick={onOpenSettings}
           className="p-1.5 rounded-full hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
-          title="Settings"
         >
           <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
@@ -110,7 +109,7 @@ export const HUD: React.FC<HUDProps> = ({
       <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md text-right min-w-[150px] sm:min-w-[200px]">
         <div className="flex items-center justify-end gap-1.5 text-[10px] sm:text-xs font-mono text-amber-400 font-bold uppercase">
           <Zap className="w-3 h-3 text-amber-400" />
-          VELOCIDAD: {((stats.currentSpeed || 0.7) * 1.2).toFixed(1)}x
+          {t.speed}: {((stats.currentSpeed || 0.7) * 1.2).toFixed(1)}x
         </div>
 
         {/* Accuracy % */}

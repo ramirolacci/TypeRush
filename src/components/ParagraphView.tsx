@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Settings, GameStats } from '../types/game';
 import { getRandomParagraph, type ParagraphItem } from '../data/paragraphs';
+import { TRANSLATIONS } from '../data/translations';
 import { soundEngine } from '../services/audio';
 import { animationService } from '../services/animation';
 import confetti from 'canvas-confetti';
@@ -26,6 +27,8 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   onKeyPressRegister
 }) => {
   const timerRef = useRef<HTMLDivElement | null>(null);
+  const t = TRANSLATIONS[settings.language];
+
   // Current Paragraph State
   const [paragraph, setParagraph] = useState<ParagraphItem>(() =>
     getRandomParagraph(settings.language, settings.difficulty)
@@ -211,7 +214,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         <div className="flex flex-col items-center">
           <div className="flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-amber-500/80 uppercase mb-1">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            TEXTO #{paragraphCount} &bull; {paragraph.totalChars} CARACTERES
+            {t.textHeader} #{paragraphCount} &bull; {paragraph.totalChars} {t.characters}
           </div>
 
           <div className="text-4xl sm:text-6xl font-black font-mono tracking-wider text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]">
@@ -287,9 +290,9 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
             <div className="absolute inset-0 bg-zinc-950/90 rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
               <CheckCircle2 className="w-12 h-12 animate-bounce" />
               <span className="text-xl font-bold font-mono uppercase tracking-wider">
-                ¡TEXTO COMPLETADO!
+                {t.textCompleted}
               </span>
-              <span className="text-sm font-mono text-zinc-400">Cargando siguiente párrafo...</span>
+              <span className="text-sm font-mono text-zinc-400">{t.loadingNext}</span>
             </div>
           )}
         </div>
@@ -297,7 +300,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         {/* Dynamic Countdown Timer Display (Matching screenshot large bottom countdown) */}
         <div className="flex flex-col items-center space-y-1">
           <div className="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
-            <Zap className="w-4 h-4 text-amber-500" /> TIEMPO RESTANTE
+            <Zap className="w-4 h-4 text-amber-500" /> {t.timeRemaining}
           </div>
 
           <div
@@ -312,7 +315,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
           </div>
 
           <p className="text-xs font-mono text-zinc-500 pt-2">
-            Tiempo asignado: <span className="text-zinc-300 font-bold">{paragraph.timeLimitSeconds}s</span> ({paragraph.totalChars} caracteres en total)
+            {t.assignedTime} <span className="text-zinc-300 font-bold">{paragraph.timeLimitSeconds}s</span> ({paragraph.totalChars} {t.characters})
           </p>
         </div>
 
@@ -321,7 +324,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
           onClick={loadNextParagraph}
           className="py-2 px-5 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 rounded-full text-xs font-mono text-zinc-300 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
         >
-          Saltar Texto <ArrowRight className="w-3.5 h-3.5" />
+          {t.skipText} <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
