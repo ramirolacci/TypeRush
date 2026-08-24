@@ -28,9 +28,9 @@ export const App: React.FC = () => {
   // Settings
   const [settings, setSettings] = useState<Settings>({
     language: 'es',
-    difficulty: 'medium',
-    speed: 2,
-    sfxVolume: 0.7,
+    difficulty: 'easy',
+    speed: 1.5,
+    sfxVolume: 0.5,
     musicVolume: 0.3,
     soundEnabled: true,
     showMobileKeyboard: false,
