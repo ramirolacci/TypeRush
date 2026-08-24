@@ -5,7 +5,8 @@ import type {
   HitJudgment,
   Particle,
   GameStats,
-  Settings
+  Settings,
+  Difficulty
 } from './types/game';
 import { getRandomWord } from './data/dictionaries';
 import { TRANSLATIONS } from './data/translations';
@@ -572,6 +573,15 @@ export const App: React.FC = () => {
             ref={menuContainerRef}
             className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6"
           >
+            {/* Project Logo Image */}
+            <div className="animate-gsap-item flex justify-center mb-1">
+              <img
+                src="/Logo.png"
+                alt="TypeRush Logo"
+                className="w-24 sm:w-32 h-auto max-h-32 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
             <div className="animate-gsap-item inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase">
               <Zap className="w-4 h-4 fill-amber-400" /> {t.menuBadge}
             </div>
