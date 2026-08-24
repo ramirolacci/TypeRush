@@ -52,6 +52,21 @@ export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
             })}
           </div>
         ))}
+        {/* Extra Bottom Row: Spacebar & Backspace */}
+        <div className="flex justify-center gap-2 pt-1">
+          <button
+            onClick={() => onKeyPress(' ')}
+            className="flex-2 py-2 px-6 bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 rounded-lg font-mono text-xs font-bold border border-zinc-700"
+          >
+            ESPACIO / SPACE
+          </button>
+          <button
+            onClick={() => onKeyPress('Backspace')}
+            className="flex-1 py-2 px-4 bg-rose-950/80 hover:bg-rose-900/80 text-rose-300 rounded-lg font-mono text-xs font-bold border border-rose-800"
+          >
+            ⌫ BORRAR
+          </button>
+        </div>
       </div>
     </div>
   );

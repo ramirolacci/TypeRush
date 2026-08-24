@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Settings, Difficulty } from '../types/game';
-import { X, Volume2, Globe, Zap, Sliders, Smartphone, Music } from 'lucide-react';
+import type { Settings, Difficulty, GameMode } from '../types/game';
+import { X, Volume2, Globe, Zap, Sliders, Smartphone, Music, Gamepad2, AlignLeft } from 'lucide-react';
 
 interface SettingsModalProps {
   settings: Settings;
@@ -31,6 +31,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         <div className="flex flex-col gap-5 py-5">
+          {/* Modo de Juego / Game Mode */}
+          <div>
+            <label className="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-2 uppercase">
+              <Gamepad2 className="w-4 h-4 text-amber-500" /> Modo de Juego / Game Mode
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onUpdateSettings({ gameMode: 'rhythm' })}
+                className={`py-2.5 px-3 rounded-xl font-mono font-bold text-xs border flex items-center justify-center gap-1.5 transition-all ${
+                  settings.gameMode === 'rhythm'
+                    ? 'bg-amber-500 text-black border-amber-400 shadow-lg shadow-amber-500/20'
+                    : 'bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" /> 🎸 Rhythm Rush
+              </button>
+
+              <button
+                onClick={() => onUpdateSettings({ gameMode: 'paragraph' })}
+                className={`py-2.5 px-3 rounded-xl font-mono font-bold text-xs border flex items-center justify-center gap-1.5 transition-all ${
+                  settings.gameMode === 'paragraph'
+                    ? 'bg-amber-500 text-black border-amber-400 shadow-lg shadow-amber-500/20'
+                    : 'bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border-zinc-700'
+                }`}
+              >
+                <AlignLeft className="w-3.5 h-3.5" /> ⏱️ Time Rush
+              </button>
+            </div>
+          </div>
+
           {/* 1. Language Option (Español / English) */}
           <div>
             <label className="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-2 uppercase">

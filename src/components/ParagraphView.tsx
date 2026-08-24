@@ -1,0 +1,325 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import type { Settings, GameStats } from '../types/game';
+import { getRandomParagraph, type ParagraphItem } from '../data/paragraphs';
+import { soundEngine } from '../services/audio';
+import confetti from 'canvas-confetti';
+import { Sparkles, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
+
+interface ParagraphViewProps {
+  settings: Settings;
+  stats: GameStats;
+  onUpdateStats: (updater: (prev: GameStats) => GameStats) => void;
+  onCompleteRound: (bonusPoints: number) => void;
+  onTimeOut: () => void;
+  isPaused: boolean;
+  onKeyPressRegister?: (handler: (char: string) => void) => void;
+}
+
+export const ParagraphView: React.FC<ParagraphViewProps> = ({
+  settings,
+  stats: _stats,
+  onUpdateStats,
+  onCompleteRound,
+  onTimeOut,
+  isPaused,
+  onKeyPressRegister
+}) => {
+  // Current Paragraph State
+  const [paragraph, setParagraph] = useState<ParagraphItem>(() =>
+    getRandomParagraph(settings.language, settings.difficulty)
+  );
+
+  // User Typing State
+  const [userInput, setUserInput] = useState<string>('');
+  const [charStatus, setCharStatus] = useState<('correct' | 'incorrect')[]>([]);
+
+  // Dynamic Timer (in seconds, with 1 decimal accuracy)
+  const [timeLeft, setTimeLeft] = useState<number>(paragraph.timeLimitSeconds);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
+
+  // Streak of paragraphs completed in current run
+  const [paragraphCount, setParagraphCount] = useState<number>(1);
+
+  // Keep refs for event listeners
+  const userInputRef = useRef(userInput);
+  const paragraphRef = useRef(paragraph);
+  const isPausedRef = useRef(isPaused);
+  const isCompletedRef = useRef(isCompleted);
+
+  userInputRef.current = userInput;
+  paragraphRef.current = paragraph;
+  isPausedRef.current = isPaused;
+  isCompletedRef.current = isCompleted;
+
+  // Load a fresh paragraph
+  const loadNextParagraph = useCallback(() => {
+    const nextPara = getRandomParagraph(settings.language, settings.difficulty);
+    setParagraph(nextPara);
+    setUserInput('');
+    setCharStatus([]);
+    setTimeLeft(nextPara.timeLimitSeconds);
+    setIsCompleted(false);
+    setParagraphCount(prev => prev + 1);
+  }, [settings.language, settings.difficulty]);
+
+  // Handle character input from keyboard or virtual mobile keys
+  const handleCharInput = useCallback(
+    (char: string) => {
+      if (isPausedRef.current || isCompletedRef.current) return;
+
+      const currentText = paragraphRef.current.text;
+      const currInput = userInputRef.current;
+      const targetIdx = currInput.length;
+
+      // Handle Backspace
+      if (char === 'Backspace') {
+        if (targetIdx > 0) {
+          setUserInput(prev => prev.slice(0, -1));
+          setCharStatus(prev => prev.slice(0, -1));
+          soundEngine.playKeyPress();
+        }
+        return;
+      }
+
+      // Ignore non-printable keys
+      if (char.length !== 1) return;
+
+      // Cannot type beyond paragraph length
+      if (targetIdx >= currentText.length) return;
+
+      const expectedChar = currentText[targetIdx];
+      const isMatch = char === expectedChar;
+
+      const newStatus = isMatch ? 'correct' : 'incorrect';
+      const newInput = currInput + char;
+
+      setUserInput(newInput);
+      setCharStatus(prev => [...prev, newStatus]);
+
+      // Audio & Stats Feedback
+      if (isMatch) {
+        soundEngine.playKeyPress();
+        onUpdateStats(s => {
+          const newTotal = s.totalLettersTyped + 1;
+          const newCorrect = s.correctLettersTyped + 1;
+          const newCombo = s.combo + 1;
+          const newMaxCombo = Math.max(s.maxCombo, newCombo);
+          return {
+            ...s,
+            score: s.score + 10 * s.multiplier,
+            combo: newCombo,
+            maxCombo: newMaxCombo,
+            totalLettersTyped: newTotal,
+            correctLettersTyped: newCorrect,
+            accuracy: (newCorrect / newTotal) * 100
+          };
+        });
+      } else {
+        soundEngine.playHit('MISS');
+        onUpdateStats(s => {
+          const newTotal = s.totalLettersTyped + 1;
+          return {
+            ...s,
+            combo: 0,
+            multiplier: 1,
+            missCount: s.missCount + 1,
+            totalLettersTyped: newTotal,
+            accuracy: (s.correctLettersTyped / newTotal) * 100
+          };
+        });
+      }
+
+      // Check if Paragraph Completed!
+      if (newInput.length >= currentText.length) {
+        setIsCompleted(true);
+        soundEngine.playComboUp(3);
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+
+        // Calculate time bonus points
+        const bonus = Math.round(timeLeft * 50);
+        onCompleteRound(bonus);
+
+        // Auto-advance after brief pause
+        setTimeout(() => {
+          loadNextParagraph();
+        }, 1200);
+      }
+    },
+    [timeLeft, onUpdateStats, onCompleteRound, loadNextParagraph]
+  );
+
+  // Expose key press callback to parent if needed
+  useEffect(() => {
+    if (onKeyPressRegister) {
+      onKeyPressRegister(handleCharInput);
+    }
+  }, [onKeyPressRegister, handleCharInput]);
+
+  // Physical Keyboard Listener
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      if (e.key === 'Backspace' || e.key.length === 1) {
+        if (e.key === ' ') e.preventDefault(); // Prevent scrolling on spacebar
+        handleCharInput(e.key);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleCharInput]);
+
+  // Real-time Countdown Timer Loop
+  useEffect(() => {
+    if (isPaused || isCompleted) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 0.1) {
+          clearInterval(timer);
+          soundEngine.playHit('MISS');
+          onTimeOut();
+          return 0;
+        }
+        return Math.max(0, parseFloat((prev - 0.1).toFixed(1)));
+      });
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [isPaused, isCompleted, onTimeOut]);
+
+  // Calculate current word index for top progress header (e.g. 2/25)
+  const currentWordIndex = Math.min(
+    paragraph.words.length,
+    userInput.trim().length === 0 ? 0 : userInput.split(' ').length
+  );
+
+  // Time warning styling
+  const isTimeLow = timeLeft <= 5 && timeLeft > 0;
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-8 select-none relative bg-slate-950">
+      {/* Background Subtle Ambient Glow */}
+      <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-slate-950 pointer-events-none" />
+
+      <div className="max-w-3xl w-full flex flex-col items-center text-center z-10 space-y-6">
+        
+        {/* Top Header: Word Counter (e.g. 2/25) - Matching exact screenshot! */}
+        <div className="flex flex-col items-center">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-amber-500/80 uppercase mb-1">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            TEXTO #{paragraphCount} &bull; {paragraph.totalChars} CARACTERES
+          </div>
+
+          <div className="text-4xl sm:text-6xl font-black font-mono tracking-wider text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+            {currentWordIndex}/{paragraph.words.length}
+          </div>
+        </div>
+
+        {/* Central Text Box Component */}
+        <div className="w-full bg-zinc-900/80 border border-zinc-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl relative min-h-[180px] flex items-center justify-center">
+          
+          <div className="text-lg sm:text-2xl font-mono leading-relaxed tracking-wide text-left flex flex-wrap gap-x-[0.3em] gap-y-2">
+            {paragraph.words.map((word, wordIdx) => {
+              // Calculate start char index for this word in paragraph.text
+              const startCharIndex = paragraph.words.slice(0, wordIdx).join(' ').length + (wordIdx > 0 ? 1 : 0);
+
+              return (
+                <span key={`word-${wordIdx}`} className="inline-flex items-center whitespace-nowrap">
+                  {word.split('').map((char, charInWordIdx) => {
+                    const globalIdx = startCharIndex + charInWordIdx;
+                    const typedChar = userInput[globalIdx];
+                    const status = charStatus[globalIdx];
+                    const isCursorHere = globalIdx === userInput.length;
+
+                    let charClass = 'text-zinc-500 transition-colors duration-100';
+                    if (status === 'correct') {
+                      charClass = 'text-amber-400 font-semibold drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]';
+                    } else if (status === 'incorrect') {
+                      charClass = 'text-rose-500 font-bold underline bg-rose-950/60 rounded px-[1px]';
+                    }
+
+                    return (
+                      <span key={`c-${globalIdx}`} className="relative inline-block">
+                        {/* Cursor vertical caret bar (matching orange bar in screenshot!) */}
+                        {isCursorHere && (
+                          <span className="absolute -left-[2px] top-0 bottom-0 w-[3px] bg-amber-400 rounded-full animate-pulse shadow-[0_0_10px_#f59e0b]" />
+                        )}
+                        <span className={charClass}>
+                          {typedChar !== undefined && status === 'incorrect' ? typedChar : char}
+                        </span>
+                      </span>
+                    );
+                  })}
+
+                  {/* Handle space after word */}
+                  {wordIdx < paragraph.words.length - 1 && (() => {
+                    const spaceGlobalIdx = startCharIndex + word.length;
+                    const spaceStatus = charStatus[spaceGlobalIdx];
+                    const isCursorAtSpace = spaceGlobalIdx === userInput.length;
+
+                    let spaceClass = 'inline-block w-[0.4em]';
+                    if (spaceStatus === 'correct') {
+                      spaceClass += ' text-amber-400/40';
+                    } else if (spaceStatus === 'incorrect') {
+                      spaceClass += ' bg-rose-500/40 rounded';
+                    }
+
+                    return (
+                      <span key={`space-${wordIdx}`} className="relative inline-block">
+                        {isCursorAtSpace && (
+                          <span className="absolute -left-[2px] top-0 bottom-0 w-[3px] bg-amber-400 rounded-full animate-pulse shadow-[0_0_10px_#f59e0b]" />
+                        )}
+                        <span className={spaceClass}>&nbsp;</span>
+                      </span>
+                    );
+                  })()}
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Victory Overlay Animation */}
+          {isCompleted && (
+            <div className="absolute inset-0 bg-zinc-950/90 rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
+              <CheckCircle2 className="w-12 h-12 animate-bounce" />
+              <span className="text-xl font-bold font-mono uppercase tracking-wider">
+                ¡TEXTO COMPLETADO!
+              </span>
+              <span className="text-sm font-mono text-zinc-400">Cargando siguiente párrafo...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Dynamic Countdown Timer Display (Matching screenshot large bottom countdown) */}
+        <div className="flex flex-col items-center space-y-1">
+          <div className="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-amber-500" /> TIEMPO RESTANTE
+          </div>
+
+          <div
+            className={`text-5xl sm:text-7xl font-black font-mono transition-all duration-300 ${
+              isTimeLow
+                ? 'text-rose-500 animate-ping scale-110 drop-shadow-[0_0_25px_rgba(244,63,94,0.8)]'
+                : 'text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]'
+            }`}
+          >
+            {timeLeft.toFixed(1)}s
+          </div>
+
+          <p className="text-xs font-mono text-zinc-500 pt-2">
+            Tiempo asignado: <span className="text-zinc-300 font-bold">{paragraph.timeLimitSeconds}s</span> ({paragraph.totalChars} caracteres en total)
+          </p>
+        </div>
+
+        {/* Manual Skip Button if user wants next paragraph */}
+        <button
+          onClick={loadNextParagraph}
+          className="py-2 px-5 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 rounded-full text-xs font-mono text-zinc-300 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+        >
+          Saltar Texto <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+};

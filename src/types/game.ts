@@ -2,7 +2,7 @@ export type Language = 'en' | 'es';
 
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 
-export type GameMode = 'rhythm' | 'sprint' | 'zen';
+export type GameMode = 'rhythm' | 'paragraph' | 'sprint' | 'zen';
 
 export type JudgmentType = 'PERFECT' | 'GREAT' | 'GOOD' | 'MISS';
 
@@ -61,6 +61,7 @@ export interface GameStats {
   currentSpeed: number;
   totalLettersTyped: number;
   correctLettersTyped: number;
+  completedParagraphs?: number;
   startTime: number | null;
   wpm: number;
   accuracy: number;

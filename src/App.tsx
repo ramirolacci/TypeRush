@@ -11,11 +11,12 @@ import { getRandomWord } from './data/dictionaries';
 import { soundEngine } from './services/audio';
 import { RhythmCanvas } from './components/RhythmCanvas';
 import { WordStack } from './components/WordStack';
+import { ParagraphView } from './components/ParagraphView';
 import { HUD } from './components/HUD';
 import { MobileKeyboard } from './components/MobileKeyboard';
 import { SettingsModal } from './components/SettingsModal';
 import { GameOverModal } from './components/GameOverModal';
-import { Play, Globe, Zap, Keyboard } from 'lucide-react';
+import { Play, Globe, Zap, Keyboard, AlignLeft, Gamepad2 } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Game States
@@ -488,7 +489,17 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [gameState, handleKeyPress]);
 
+  const paragraphKeyHandlerRef = useRef<((char: string) => void) | null>(null);
+
   const targetChar = currentWord ? currentWord.text[currentWord.typedIndex] || null : null;
+
+  const handleMobileKeyPress = (char: string) => {
+    if (settings.gameMode === 'paragraph' && paragraphKeyHandlerRef.current) {
+      paragraphKeyHandlerRef.current(char);
+    } else {
+      handleKeyPress(char);
+    }
+  };
 
   return (
     <div className="w-screen h-screen flex flex-col bg-slate-950 text-white font-sans overflow-hidden select-none">
@@ -497,7 +508,7 @@ export const App: React.FC = () => {
         <div className="relative flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950">
           <div className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6 animate-fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase">
-              <Zap className="w-4 h-4 fill-amber-400" /> RHYTHM TYPING GAME
+              <Zap className="w-4 h-4 fill-amber-400" /> MULTI-MODE TYPING GAME
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-black font-mono tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(245,158,11,0.4)]">
@@ -505,10 +516,34 @@ export const App: React.FC = () => {
             </h1>
 
             <p className="text-zinc-400 text-sm font-mono leading-relaxed">
-              Demuestra tu velocidad tipeando palabras al ritmo del flujo de notas estilo Guitar Hero.
+              Elige tu modo favorito: velocidad por carriles rítmicos o contrarreloj de minitextos.
             </p>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            {/* Game Mode Picker Tabs on Main Menu */}
+            <div className="grid grid-cols-2 gap-2 bg-zinc-950/80 p-1.5 rounded-2xl border border-zinc-800">
+              <button
+                onClick={() => setSettings(s => ({ ...s, gameMode: 'rhythm' }))}
+                className={`py-2.5 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  settings.gameMode === 'rhythm'
+                    ? 'bg-amber-500 text-black shadow-md'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" /> Rhythm Rush
+              </button>
+              <button
+                onClick={() => setSettings(s => ({ ...s, gameMode: 'paragraph' }))}
+                className={`py-2.5 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  settings.gameMode === 'paragraph'
+                    ? 'bg-amber-500 text-black shadow-md'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <AlignLeft className="w-3.5 h-3.5" /> Time Rush
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
               <button
                 onClick={() => setSettings(s => ({ ...s, language: s.language === 'es' ? 'en' : 'es' }))}
                 className="py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-sm font-mono font-bold flex items-center justify-center gap-2 transition-all"
@@ -549,29 +584,52 @@ export const App: React.FC = () => {
             onRestart={startNewGame}
           />
 
-          {/* Rhythm Lane Canvas Container (Fills screen) */}
-          <div className="w-full h-full">
-            <RhythmCanvas
-              notes={notes}
-              judgments={judgments}
-              particles={particles}
-              combo={stats.combo}
+          {/* Render Mode Content */}
+          {settings.gameMode === 'paragraph' ? (
+            <ParagraphView
+              settings={settings}
+              stats={stats}
+              isPaused={gameState === 'paused'}
+              onUpdateStats={setStats}
+              onCompleteRound={(bonus) => {
+                setStats(s => ({
+                  ...s,
+                  score: s.score + bonus,
+                  completedParagraphs: (s.completedParagraphs || 0) + 1
+                }));
+              }}
+              onTimeOut={() => setGameState('gameover')}
+              onKeyPressRegister={(handler) => {
+                paragraphKeyHandlerRef.current = handler;
+              }}
             />
-          </div>
+          ) : (
+            <>
+              {/* Rhythm Lane Canvas Container (Fills screen) */}
+              <div className="w-full h-full">
+                <RhythmCanvas
+                  notes={notes}
+                  judgments={judgments}
+                  particles={particles}
+                  combo={stats.combo}
+                />
+              </div>
 
-          {/* Bottom Word Stack (Floating overlay at bottom center) */}
-          <WordStack
-            currentWord={currentWord}
-            upcomingWords={upcomingWords}
-            hasMobileKeyboard={settings.showMobileKeyboard}
-          />
+              {/* Bottom Word Stack (Floating overlay at bottom center) */}
+              <WordStack
+                currentWord={currentWord}
+                upcomingWords={upcomingWords}
+                hasMobileKeyboard={settings.showMobileKeyboard}
+              />
+            </>
+          )}
 
           {/* Optional Mobile Touch Virtual Keyboard */}
           {settings.showMobileKeyboard && (
             <div className="absolute bottom-0 left-0 right-0 z-40">
               <MobileKeyboard
                 targetChar={targetChar}
-                onKeyPress={handleKeyPress}
+                onKeyPress={handleMobileKeyPress}
                 language={settings.language}
               />
             </div>
