@@ -115,11 +115,18 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
           const newCorrect = s.correctLettersTyped + 1;
           const newCombo = s.combo + 1;
           const newMaxCombo = Math.max(s.maxCombo, newCombo);
+          const newMultiplier = Math.min(4, 1 + Math.floor(newCombo / 10));
+
+          if (newMultiplier > s.multiplier) {
+            soundEngine.playComboUp(newMultiplier);
+          }
+
           return {
             ...s,
-            score: s.score + 10 * s.multiplier,
+            score: s.score + 10 * newMultiplier,
             combo: newCombo,
             maxCombo: newMaxCombo,
+            multiplier: newMultiplier,
             totalLettersTyped: newTotal,
             correctLettersTyped: newCorrect,
             accuracy: (newCorrect / newTotal) * 100

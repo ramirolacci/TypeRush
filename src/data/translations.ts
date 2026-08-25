@@ -123,7 +123,7 @@ export const TRANSLATIONS: Record<Language, {
 
     // Level Progression
     levelLabel: 'NIVEL',
-    levelUpTitle: '¡SUBIDA DE NIVEL!',
+    levelUpTitle: '¡SUBISTE DE NIVEL!',
     levelUpDesc: 'Palabras más largas y mayor velocidad de caída'
   },
   en: {
