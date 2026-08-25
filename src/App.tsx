@@ -307,13 +307,13 @@ export const App: React.FC = () => {
 
   // Main Animation Loop
   useEffect(() => {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || settings.gameMode !== 'rhythm') return;
 
     let animId: number;
     let lastTime = performance.now();
 
     const update = (now: number) => {
-      if (gameStateRef.current !== 'playing') return;
+      if (gameStateRef.current !== 'playing' || settings.gameMode !== 'rhythm') return;
 
       const delta = (now - lastTime) / 1000;
       lastTime = now;
@@ -394,12 +394,12 @@ export const App: React.FC = () => {
 
     animId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(animId);
-  }, [gameState, stats.currentSpeed, handleWordCompleted]);
+  }, [gameState, settings.gameMode, stats.currentSpeed, handleWordCompleted]);
 
   // Handle Input Keypress with Strike Line Timing Restriction
   const handleKeyPress = useCallback(
     (pressedChar: string) => {
-      if (gameState !== 'playing' || !currentWord) return;
+      if (gameState !== 'playing' || settings.gameMode !== 'rhythm' || !currentWord) return;
 
       const charToMatch = pressedChar.toLowerCase();
       const targetCharIndex = currentWord.typedIndex;
