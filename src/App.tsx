@@ -597,27 +597,27 @@ export const App: React.FC = () => {
             className="max-w-md w-full bg-zinc-900/95 border border-zinc-800 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-xl text-center space-y-4 sm:space-y-6 z-10 relative max-h-[92vh] overflow-y-auto"
           >
             {/* Project Logo Image */}
-            <div className="animate-gsap-item flex justify-center mb-1">
+            <div className="animate-gsap-item flex justify-center mb-0.5 sm:mb-1">
               <img
                 src="/Logo.png"
                 alt="TypeRush Logo"
-                className="w-24 sm:w-32 h-auto max-h-32 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:scale-105 transition-transform duration-300"
+                className="w-20 sm:w-32 h-auto max-h-28 sm:max-h-32 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:scale-105 transition-transform duration-300"
               />
             </div>
 
-            <div className="animate-gsap-item inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase">
-              <Zap className="w-4 h-4 fill-amber-400" /> {t.menuBadge}
+            <div className="animate-gsap-item inline-flex items-center gap-1.5 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] sm:text-xs font-mono font-bold uppercase">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400" /> {t.menuBadge}
             </div>
 
-            <p className="animate-gsap-item text-zinc-400 text-sm font-mono leading-relaxed">
+            <p className="animate-gsap-item text-zinc-400 text-xs sm:text-sm font-mono leading-relaxed">
               {t.menuDescription}
             </p>
 
             {/* Game Mode Picker Tabs on Main Menu */}
-            <div className="animate-gsap-item grid grid-cols-2 gap-2 bg-zinc-950/80 p-1.5 rounded-2xl border border-zinc-800">
+            <div className="animate-gsap-item grid grid-cols-2 gap-1.5 sm:gap-2 bg-zinc-950/80 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-zinc-800">
               <button
                 onClick={() => setSettings(s => ({ ...s, gameMode: 'rhythm' }))}
-                className={`py-2.5 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-2.5 sm:py-2.5 sm:px-3 rounded-lg sm:rounded-xl font-mono text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                   settings.gameMode === 'rhythm'
                     ? 'bg-amber-500 text-black shadow-md'
                     : 'text-zinc-400 hover:text-white'
@@ -628,7 +628,7 @@ export const App: React.FC = () => {
 
               <button
                 onClick={() => setSettings(s => ({ ...s, gameMode: 'paragraph' }))}
-                className={`py-2.5 px-3 rounded-xl font-mono text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-2.5 sm:py-2.5 sm:px-3 rounded-lg sm:rounded-xl font-mono text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                   settings.gameMode === 'paragraph'
                     ? 'bg-amber-500 text-black shadow-md'
                     : 'text-zinc-400 hover:text-white'
@@ -638,30 +638,30 @@ export const App: React.FC = () => {
               </button>
             </div>
 
-            <div className="animate-gsap-item grid grid-cols-2 gap-3 pt-1">
+            <div className="animate-gsap-item grid grid-cols-2 gap-2 sm:gap-3 pt-0.5 sm:pt-1">
               <button
                 onClick={() => setSettings(s => ({ ...s, language: s.language === 'es' ? 'en' : 'es' }))}
-                className="py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-sm font-mono font-bold flex items-center justify-center gap-2 transition-all"
+                className="py-2.5 px-3 sm:py-3 sm:px-4 rounded-xl sm:rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs sm:text-sm font-mono font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all"
               >
-                <Globe className="w-4 h-4 text-amber-400" />
+                <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
                 {t.languageName}
               </button>
 
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-sm font-mono font-bold flex items-center justify-center gap-2 transition-all"
+                className="py-2.5 px-3 sm:py-3 sm:px-4 rounded-xl sm:rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs sm:text-sm font-mono font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all"
               >
-                <Keyboard className="w-4 h-4 text-cyan-400" />
+                <Keyboard className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
                 {t.options}
               </button>
             </div>
 
-            <div className="flex justify-center pt-2">
+            <div className="flex justify-center pt-1 sm:pt-2">
               <button
                 onClick={startNewGame}
-                className="animate-gsap-item px-10 py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-lg rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all inline-flex items-center justify-center gap-2.5 uppercase tracking-wider"
+                className="animate-gsap-item px-8 py-2.5 sm:px-10 sm:py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all inline-flex items-center justify-center gap-2 sm:gap-2.5 uppercase tracking-wider"
               >
-                <Play className="w-5 h-5 fill-black" /> {t.start}
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-black" /> {t.start}
               </button>
             </div>
           </div>
@@ -673,17 +673,17 @@ export const App: React.FC = () => {
         <div className="relative flex-1 w-full h-full overflow-hidden bg-slate-950">
           {/* Level Up Notification Banner */}
           {levelUpInfo && (
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+            <div className="absolute top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-auto max-w-[92vw]">
               <div
                 ref={levelUpBannerRef}
-                className="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 border-2 border-yellow-200 text-black px-6 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md"
+                className="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 border-2 border-yellow-200 text-black px-3.5 py-1.5 sm:px-6 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-2xl flex items-center gap-2 sm:gap-3 backdrop-blur-md"
               >
-                <Zap className="w-6 h-6 fill-black animate-bounce" />
+                <Zap className="w-4 h-4 sm:w-6 sm:h-6 fill-black animate-bounce shrink-0" />
                 <div className="text-center">
-                  <div className="text-base font-black font-mono tracking-wider uppercase">
+                  <div className="text-xs sm:text-base font-black font-mono tracking-wider uppercase whitespace-nowrap">
                     {t.levelUpTitle} &bull; {t.levelLabel} {levelUpInfo.level}
                   </div>
-                  <div className="text-xs font-mono font-bold text-zinc-900">
+                  <div className="text-[10px] sm:text-xs font-mono font-bold text-zinc-900 leading-tight">
                     {t.levelUpDesc}
                   </div>
                 </div>
@@ -749,6 +749,7 @@ export const App: React.FC = () => {
                 targetChar={targetChar}
                 onKeyPress={handleMobileKeyPress}
                 language={settings.language}
+                showExtraKeys={settings.gameMode === 'paragraph'}
               />
             </div>
           )}

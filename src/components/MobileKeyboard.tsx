@@ -5,6 +5,7 @@ interface MobileKeyboardProps {
   targetChar: string | null;
   onKeyPress: (char: string) => void;
   language: 'en' | 'es';
+  showExtraKeys?: boolean;
 }
 
 const KEYBOARD_ROWS_EN = [
@@ -22,7 +23,8 @@ const KEYBOARD_ROWS_ES = [
 export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
   targetChar,
   onKeyPress,
-  language
+  language,
+  showExtraKeys = false
 }) => {
   const rows = language === 'es' ? KEYBOARD_ROWS_ES : KEYBOARD_ROWS_EN;
   const activeChar = targetChar?.toLowerCase() || null;
@@ -54,21 +56,23 @@ export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
             })}
           </div>
         ))}
-        {/* Extra Bottom Row: Spacebar & Backspace */}
-        <div className="flex justify-center gap-1.5 pt-0.5">
-          <button
-            onClick={() => onKeyPress(' ')}
-            className="flex-2 h-10 px-4 bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 rounded-md sm:rounded-lg font-mono text-xs font-bold border border-zinc-700 flex items-center justify-center touch-manipulation active:scale-95"
-          >
-            {t.spaceKey}
-          </button>
-          <button
-            onClick={() => onKeyPress('Backspace')}
-            className="flex-1 max-w-[100px] h-10 px-3 bg-rose-950/80 hover:bg-rose-900/80 text-rose-300 rounded-md sm:rounded-lg font-mono text-xs font-bold border border-rose-800 flex items-center justify-center touch-manipulation active:scale-95"
-          >
-            ⌫ {t.backspaceKey}
-          </button>
-        </div>
+        {/* Extra Bottom Row: Spacebar & Backspace (Only shown when showExtraKeys is true) */}
+        {showExtraKeys && (
+          <div className="flex justify-center gap-1.5 pt-0.5">
+            <button
+              onClick={() => onKeyPress(' ')}
+              className="flex-2 h-10 px-4 bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 rounded-md sm:rounded-lg font-mono text-xs font-bold border border-zinc-700 flex items-center justify-center touch-manipulation active:scale-95"
+            >
+              {t.spaceKey}
+            </button>
+            <button
+              onClick={() => onKeyPress('Backspace')}
+              className="flex-1 max-w-[100px] h-10 px-3 bg-rose-950/80 hover:bg-rose-900/80 text-rose-300 rounded-md sm:rounded-lg font-mono text-xs font-bold border border-rose-800 flex items-center justify-center touch-manipulation active:scale-95"
+            >
+              ⌫ {t.backspaceKey}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

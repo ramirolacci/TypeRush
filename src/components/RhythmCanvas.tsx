@@ -93,15 +93,16 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
         ctx.stroke();
       }
 
-      // 2. Draw Horizontal Strike Line & Target Rings (All Coffee Color)
-      const ringRadius = 30;
+      // 2. Draw Horizontal Strike Line & Target Rings (Responsive sizing for Mobile)
+      const isMobileScreen = width < 640 || hasMobileKeyboard;
+      const ringRadius = isMobileScreen ? 20 : 30;
       const coffeeStrokeColor = '#A88267';
       const coffeeGlowColor = 'rgba(168, 130, 103, 0.5)';
 
-      ctx.shadowBlur = 8;
+      ctx.shadowBlur = isMobileScreen ? 5 : 8;
       ctx.shadowColor = coffeeGlowColor;
       ctx.strokeStyle = coffeeStrokeColor;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = isMobileScreen ? 2.5 : 4;
 
       // Draw horizontal strike line in SEGMENTS so it never passes inside the circles
       ctx.beginPath();
@@ -136,10 +137,10 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
         ctx.fill();
 
         // Coffee ring border
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = isMobileScreen ? 5 : 8;
         ctx.shadowColor = coffeeGlowColor;
         ctx.strokeStyle = 'rgba(168, 130, 103, 0.85)';
-        ctx.lineWidth = 3.5;
+        ctx.lineWidth = isMobileScreen ? 2.5 : 3.5;
         ctx.stroke();
         ctx.shadowBlur = 0;
       }
@@ -155,7 +156,7 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
       // 3. Draw Connecting Path Line between consecutive nodes
       if (activeNotes.length > 1) {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = isMobileScreen ? 2 : 3;
         ctx.beginPath();
         ctx.moveTo(activeNotes[0].x, activeNotes[0].y);
         for (let i = 1; i < activeNotes.length; i++) {
@@ -167,11 +168,13 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
       // 4. Draw Falling Letter Nodes (Soft matte colors by lane: 0: Yellow, 1: Blue, 2: Orange, 3: White)
       activeNotes.forEach((note, idx) => {
         const isNextTarget = idx === 0;
-        const radius = isNextTarget ? 34 : 28;
+        const radius = isMobileScreen
+          ? (isNextTarget ? 22 : 18)
+          : (isNextTarget ? 34 : 28);
         const laneTheme = LANE_THEMES[note.laneIndex % 4] || LANE_THEMES[0];
 
         // Soft glow matching lane theme (not neon)
-        ctx.shadowBlur = isNextTarget ? 14 : 6;
+        ctx.shadowBlur = isNextTarget ? (isMobileScreen ? 8 : 14) : 5;
         ctx.shadowColor = isNextTarget ? 'rgba(230, 160, 40, 0.5)' : laneTheme.glow;
 
         // Outer Node Circle
@@ -189,7 +192,7 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
           ctx.strokeStyle = laneTheme.stroke;
         }
 
-        ctx.lineWidth = isNextTarget ? 3.5 : 2;
+        ctx.lineWidth = isNextTarget ? (isMobileScreen ? 2.5 : 3.5) : (isMobileScreen ? 1.5 : 2);
         ctx.fill();
         ctx.stroke();
         ctx.shadowBlur = 0;
@@ -197,14 +200,17 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
         // Pulsing indicator ring for active target
         if (isNextTarget && !note.missed) {
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = isMobileScreen ? 1.5 : 2;
           ctx.beginPath();
-          ctx.arc(note.x, note.y, radius + 6, 0, Math.PI * 2);
+          ctx.arc(note.x, note.y, radius + (isMobileScreen ? 4 : 6), 0, Math.PI * 2);
           ctx.stroke();
         }
 
         // Letter Label inside circle
-        ctx.font = `900 ${isNextTarget ? 26 : 22}px "JetBrains Mono", monospace`;
+        const fontSize = isMobileScreen
+          ? (isNextTarget ? 17 : 14)
+          : (isNextTarget ? 26 : 22);
+        ctx.font = `900 ${fontSize}px "JetBrains Mono", monospace`;
         ctx.fillStyle = note.missed ? '#ffffff' : laneTheme.text;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
