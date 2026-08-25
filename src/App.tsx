@@ -102,11 +102,11 @@ export const App: React.FC = () => {
   // Spawn notes for a new word
   const spawnWordNotes = useCallback((wordText: string, wordId: string) => {
     const newNotes: NoteNode[] = [];
-    const numLanes = 5;
+    const numLanes = 4;
 
     for (let i = 0; i < wordText.length; i++) {
       const char = wordText[i];
-      const laneIndex = (i * 2 + Math.floor(Math.random() * 2)) % numLanes;
+      const laneIndex = (i * 1 + Math.floor(Math.random() * 2)) % numLanes;
       const initialProgress = -0.18 * i;
 
       newNotes.push({
@@ -128,9 +128,9 @@ export const App: React.FC = () => {
   }, []);
 
   // Advance to next word in queue
-  const advanceToNextWord = useCallback(() => {
+  const advanceToNextWord = useCallback((diff?: Difficulty) => {
+    const activeDiff = diff || statsRef.current.activeDifficulty || 'easy';
     const queue = upcomingWordsRef.current;
-    const activeDiff = statsRef.current.activeDifficulty || 'easy';
 
     const nextWordText = queue[0] || getRandomWord(settings.language, activeDiff);
     const newUpcoming = [
@@ -155,6 +155,80 @@ export const App: React.FC = () => {
   }, [settings.language, spawnWordNotes]);
 
   const hasAdvancedRef = useRef(false);
+
+  // Handle Word Completion & Level Progression Logic
+  const handleWordCompleted = useCallback((wasSuccess: boolean) => {
+    const currentCompleted = statsRef.current.completedWordsCount || 0;
+
+    if (wasSuccess) {
+      const newCompletedWords = currentCompleted + 1;
+      let newLevel = 1;
+      let newDifficulty: Difficulty = 'easy';
+      let newSpeed = 0.7;
+
+      if (newCompletedWords >= 18) {
+        newLevel = 4;
+        newDifficulty = 'expert';
+        newSpeed = 1.85;
+      } else if (newCompletedWords >= 10) {
+        newLevel = 3;
+        newDifficulty = 'hard';
+        newSpeed = 1.45;
+      } else if (newCompletedWords >= 4) {
+        newLevel = 2;
+        newDifficulty = 'medium';
+        newSpeed = 1.05;
+      } else {
+        newLevel = 1;
+        newDifficulty = 'easy';
+        newSpeed = Math.min(1.0, 0.7 + newCompletedWords * 0.08);
+      }
+
+      const prevLevel = statsRef.current.level || 1;
+
+      if (newLevel > prevLevel) {
+        soundEngine.playComboUp(4);
+        setLevelUpInfo({ level: newLevel, difficulty: newDifficulty });
+        setTimeout(() => {
+          animationService.animateLevelUpBanner(levelUpBannerRef.current);
+        }, 30);
+      }
+
+      setStats(s => ({
+        ...s,
+        completedWordsCount: newCompletedWords,
+        level: newLevel,
+        activeDifficulty: newDifficulty,
+        currentSpeed: newSpeed
+      }));
+
+      setTimeout(() => {
+        advanceToNextWord(newDifficulty);
+        hasAdvancedRef.current = false;
+      }, 20);
+    } else {
+      // Word missed (fell past strike line)
+      soundEngine.playHit('MISS');
+      setStats(s => {
+        const newMissedWords = (s.missedWordsCount || 0) + 1;
+        if (newMissedWords >= 3) {
+          setTimeout(() => setGameState('gameover'), 50);
+        }
+        return {
+          ...s,
+          combo: 0,
+          multiplier: 1,
+          missCount: s.missCount + 1,
+          missedWordsCount: newMissedWords
+        };
+      });
+
+      setTimeout(() => {
+        advanceToNextWord(statsRef.current.activeDifficulty || 'easy');
+        hasAdvancedRef.current = false;
+      }, 20);
+    }
+  }, [advanceToNextWord]);
 
   // Start / Restart Game Round
   const startNewGame = useCallback(() => {
@@ -244,12 +318,12 @@ export const App: React.FC = () => {
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      // Falling speed multiplier based on progressive currentSpeed (starts at 0.7, caps at 1.6)
+      // Falling speed multiplier based on progressive currentSpeed (starts at 0.7, caps at 1.85)
       const currentSpeedMultiplier = (stats.currentSpeed || 0.7) * 0.45;
 
       // 1. Move all notes downwards
       setNotes(prevNotes => {
-        let shouldAdvanceWord = false;
+        let wordWasMissed = false;
         const currWord = currentWordRef.current;
 
         const updated = prevNotes.map(note => {
@@ -265,96 +339,26 @@ export const App: React.FC = () => {
           return { ...note, progress: newProgress };
         });
 
-        // 2. Check active word letter progression & automatic advance
+        // 2. Check active word letter progression & automatic advance if missed
         if (currWord) {
-          // If the note corresponding to current target letter is missed (passed strike line), advance target index!
           const targetNote = updated.find(n => n.charIndex === currWord.typedIndex);
           if (targetNote && (targetNote.missed || targetNote.progress > 1.15)) {
-            const nextIndex = currWord.typedIndex + 1;
-            if (nextIndex >= currWord.text.length) {
-              shouldAdvanceWord = true;
-            } else {
-              const updatedWord = { ...currWord, typedIndex: nextIndex };
-              setCurrentWord(updatedWord);
-              currentWordRef.current = updatedWord;
-            }
+            wordWasMissed = true;
           }
 
-          // If all notes for this word are hit or missed, advance to next word!
           const wordNotes = updated.filter(n => n.wordId === currWord.id);
           if (wordNotes.length > 0 && wordNotes.every(n => n.hit || n.missed)) {
-            shouldAdvanceWord = true;
+            const hasUnfinishedLetters = currWord.typedIndex < currWord.text.length;
+            if (hasUnfinishedLetters) {
+              wordWasMissed = true;
+            }
           }
         }
 
-        // 3. Handle Word Advancement & 3-Missed-Words Limit
-        if (shouldAdvanceWord && !hasAdvancedRef.current) {
+        // 3. Handle Word Missed Advancement
+        if (wordWasMissed && !hasAdvancedRef.current) {
           hasAdvancedRef.current = true;
-          const wasCompleted = currWord && currWord.typedIndex >= currWord.text.length;
-
-          if (!wasCompleted) {
-            soundEngine.playHit('MISS');
-            setStats(s => {
-              const newMissedWords = s.missedWordsCount + 1;
-              if (newMissedWords >= 3) {
-                setTimeout(() => setGameState('gameover'), 50);
-              }
-              return {
-                ...s,
-                combo: 0,
-                multiplier: 1,
-                missCount: s.missCount + 1,
-                missedWordsCount: newMissedWords
-              };
-            });
-          } else {
-            // Word completed successfully! Evaluate dynamic level progression
-            setStats(s => {
-              const newCompletedWords = (s.completedWordsCount || 0) + 1;
-              let newLevel = 1;
-              let newDifficulty: Difficulty = 'easy';
-              let newSpeed = 0.7;
-
-              if (newCompletedWords >= 18) {
-                newLevel = 4;
-                newDifficulty = 'expert';
-                newSpeed = 1.85;
-              } else if (newCompletedWords >= 10) {
-                newLevel = 3;
-                newDifficulty = 'hard';
-                newSpeed = 1.45;
-              } else if (newCompletedWords >= 4) {
-                newLevel = 2;
-                newDifficulty = 'medium';
-                newSpeed = 1.05;
-              } else {
-                newLevel = 1;
-                newDifficulty = 'easy';
-                newSpeed = Math.min(1.0, 0.7 + newCompletedWords * 0.08);
-              }
-
-              if (newLevel > (s.level || 1)) {
-                soundEngine.playComboUp(4);
-                setLevelUpInfo({ level: newLevel, difficulty: newDifficulty });
-                setTimeout(() => {
-                  animationService.animateLevelUpBanner(levelUpBannerRef.current);
-                }, 30);
-              }
-
-              return {
-                ...s,
-                completedWordsCount: newCompletedWords,
-                level: newLevel,
-                activeDifficulty: newDifficulty,
-                currentSpeed: newSpeed
-              };
-            });
-          }
-
-          setTimeout(() => {
-            advanceToNextWord();
-            hasAdvancedRef.current = false;
-          }, 20);
+          handleWordCompleted(false);
         }
 
         return updated;
@@ -390,7 +394,7 @@ export const App: React.FC = () => {
 
     animId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(animId);
-  }, [gameState, stats.currentSpeed, advanceToNextWord]);
+  }, [gameState, stats.currentSpeed, handleWordCompleted]);
 
   // Handle Input Keypress with Strike Line Timing Restriction
   const handleKeyPress = useCallback(
@@ -504,7 +508,8 @@ export const App: React.FC = () => {
         const nextTypedIndex = currentWord.typedIndex + 1;
 
         if (nextTypedIndex >= currentWord.text.length) {
-          advanceToNextWord();
+          hasAdvancedRef.current = true;
+          handleWordCompleted(true);
         } else {
           const updatedWord = { ...currentWord, typedIndex: nextTypedIndex };
           setCurrentWord(updatedWord);
@@ -527,7 +532,7 @@ export const App: React.FC = () => {
         });
       }
     },
-    [gameState, currentWord, notes, advanceToNextWord]
+    [gameState, currentWord, notes, handleWordCompleted]
   );
 
   // Physical Keyboard Listener
@@ -744,7 +749,12 @@ export const App: React.FC = () => {
 
       {/* 4. Game Over Modal */}
       {gameState === 'gameover' && (
-        <GameOverModal stats={stats} language={settings.language} onRestart={startNewGame} />
+        <GameOverModal
+          stats={stats}
+          language={settings.language}
+          onRestart={startNewGame}
+          onGoToMenu={() => setGameState('menu')}
+        />
       )}
     </div>
   );

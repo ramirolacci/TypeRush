@@ -31,96 +31,98 @@ class SoundEngine {
     // Music disabled per user requirement
   }
 
-  // Play crisp mechanical key press sound
+  // Play realistic mechanical keyboard key press (Cherry MX Blue / Brown clack + switch bottom-out thock)
   public playKeyPress() {
     if (!this.isEnabled || this.sfxVolume <= 0) return;
     this.init();
     if (!this.ctx) return;
 
     const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    const vol = this.sfxVolume * 0.65;
 
-    // High subtle click frequency
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(800 + Math.random() * 200, now);
-    osc.frequency.exponentialRampToValueAtTime(120, now + 0.03);
+    // 1. High frequency tactile "clack" click (Filtered white noise transient)
+    try {
+      const sampleRate = this.ctx.sampleRate;
+      const bufferSize = Math.floor(sampleRate * 0.007); // 7ms noise click
+      const buffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (sampleRate * 0.002));
+      }
 
-    gain.gain.setValueAtTime(this.sfxVolume * 0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
 
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(2400 + Math.random() * 500, now); // 2.4kHz - 2.9kHz mechanical click
+      bandpass.Q.setValueAtTime(1.5, now);
 
-    osc.start(now);
-    osc.stop(now + 0.03);
-  }
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(vol * 0.85, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.007);
 
-  // Play musical hit chime based on judgment
-  public playHit(type: 'PERFECT' | 'GREAT' | 'GOOD' | 'MISS', combo: number = 1) {
-    if (!this.isEnabled || this.sfxVolume <= 0) return;
-    this.init();
-    if (!this.ctx) return;
+      noise.connect(bandpass);
+      bandpass.connect(noiseGain);
+      noiseGain.connect(this.ctx.destination);
 
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    if (type === 'MISS') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.linearRampToValueAtTime(80, now + 0.15);
-
-      gain.gain.setValueAtTime(this.sfxVolume * 0.4, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-    } else {
-      // Escalating pitch based on combo
-      const baseFreq = type === 'PERFECT' ? 523.25 : type === 'GREAT' ? 440 : 349.23; // C5, A4, F4
-      const pitchOffset = Math.min(combo * 15, 300);
-      const freq = baseFreq + pitchOffset;
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.2, now + 0.1);
-
-      gain.gain.setValueAtTime(this.sfxVolume * (type === 'PERFECT' ? 0.5 : 0.35), now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      noise.start(now);
+      noise.stop(now + 0.007);
+    } catch {
+      // Fallback if buffer creation fails
     }
 
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    // 2. Low-mid mechanical switch bottom-out "thock" (Triangle pitch decay)
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+
+    const switchPitch = 220 + Math.random() * 40; // 220Hz - 260Hz switch body
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(switchPitch, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.025);
+
+    oscGain.gain.setValueAtTime(vol * 0.7, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+    osc.connect(oscGain);
+    oscGain.connect(this.ctx.destination);
 
     osc.start(now);
-    osc.stop(now + (type === 'MISS' ? 0.15 : 0.12));
+    osc.stop(now + 0.025);
   }
 
-  // Play combo streak boost sound (Guitar Hero style multiplier sound)
-  public playComboUp(multiplier: number) {
+  // Play judgment hit sound (Only error sound for MISS; letter typing uses mechanical keyboard sound above)
+  public playHit(type: 'PERFECT' | 'GREAT' | 'GOOD' | 'MISS', _combo: number = 1) {
     if (!this.isEnabled || this.sfxVolume <= 0) return;
+
+    // Remove musical chime ("bombita") sound on letter hits!
+    if (type !== 'MISS') return;
+
     this.init();
     if (!this.ctx) return;
 
     const now = this.ctx.currentTime;
-    const chord = [261.63, 329.63, 392.00, 523.25]; // C major chord arpeggio
-    
-    chord.forEach((freq, idx) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const startTime = now + idx * 0.05;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq * (1 + multiplier * 0.1), startTime);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.linearRampToValueAtTime(70, now + 0.12);
 
-      gain.gain.setValueAtTime(this.sfxVolume * 0.3, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.2);
+    gain.gain.setValueAtTime(this.sfxVolume * 0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
 
-      osc.start(startTime);
-      osc.stop(startTime + 0.2);
-    });
+    osc.start(now);
+    osc.stop(now + 0.12);
+  }
+
+  // Play combo streak boost sound (subtle click accent)
+  public playComboUp(_multiplier: number) {
+    // Disabled musical chord to keep clean mechanical typing experience
+    return;
   }
 
   // Background Synth Beat Loop Generator (Disabled per user requirement)

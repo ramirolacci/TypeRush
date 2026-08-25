@@ -39,6 +39,7 @@ export const TRANSLATIONS: Record<Language, {
   precision: string;
   maxCombo: string;
   playAgain: string;
+  mainMenu: string;
   judgmentPerfect: string;
   judgmentGreat: string;
   judgmentGood: string;
@@ -101,6 +102,7 @@ export const TRANSLATIONS: Record<Language, {
     precision: 'PRECISIÓN',
     maxCombo: 'COMBO MÁX',
     playAgain: 'REINTENTAR',
+    mainMenu: 'MENÚ PRINCIPAL',
     judgmentPerfect: 'PERFECTO',
     judgmentGreat: 'GENIAL',
     judgmentGood: 'BUENO',
@@ -163,6 +165,7 @@ export const TRANSLATIONS: Record<Language, {
     precision: 'ACCURACY',
     maxCombo: 'MAX COMBO',
     playAgain: 'PLAY AGAIN',
+    mainMenu: 'MAIN MENU',
     judgmentPerfect: 'PERFECT',
     judgmentGreat: 'GREAT',
     judgmentGood: 'GOOD',

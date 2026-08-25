@@ -3,15 +3,16 @@ import type { GameStats, Language } from '../types/game';
 import { TRANSLATIONS } from '../data/translations';
 import { animationService } from '../services/animation';
 import confetti from 'canvas-confetti';
-import { Trophy, RefreshCw, Flame, Target, Award } from 'lucide-react';
+import { Trophy, RefreshCw, Flame, Target, Award, Home } from 'lucide-react';
 
 interface GameOverModalProps {
   stats: GameStats;
   language: Language;
   onRestart: () => void;
+  onGoToMenu: () => void;
 }
 
-export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, language, onRestart }) => {
+export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, language, onRestart, onGoToMenu }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const scoreRef = useRef<HTMLDivElement | null>(null);
   const t = TRANSLATIONS[language];
@@ -88,13 +89,22 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, language, o
           </div>
         </div>
 
-        {/* Restart Button */}
-        <button
-          onClick={onRestart}
-          className="w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-lg rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
-        >
-          <RefreshCw className="w-5 h-5" /> {t.playAgain}
-        </button>
+        {/* Action Buttons */}
+        <div className="space-y-2.5">
+          <button
+            onClick={onRestart}
+            className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-base rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+          >
+            <RefreshCw className="w-5 h-5" /> {t.playAgain}
+          </button>
+
+          <button
+            onClick={onGoToMenu}
+            className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white font-mono font-bold text-sm rounded-2xl shadow-md hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+          >
+            <Home className="w-4 h-4 text-amber-400" /> {t.mainMenu}
+          </button>
+        </div>
       </div>
     </div>
   );
