@@ -5,7 +5,6 @@ import { TRANSLATIONS } from '../data/translations';
 import { soundEngine } from '../services/audio';
 import { animationService } from '../services/animation';
 import { Sparkles, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
-import { LetterConfettiCanvas } from './LetterConfettiCanvas';
 
 interface ParagraphViewProps {
   settings: Settings;
@@ -131,11 +130,16 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         animationService.animateTimerShake(timerRef.current);
         onUpdateStats(s => {
           const newTotal = s.totalLettersTyped + 1;
+          const newMissedWords = (s.missedWordsCount || 0) + 1;
+          if (newMissedWords >= 3) {
+            setTimeout(() => onTimeOutRef.current(), 50);
+          }
           return {
             ...s,
             combo: 0,
             multiplier: 1,
             missCount: s.missCount + 1,
+            missedWordsCount: newMissedWords,
             totalLettersTyped: newTotal,
             accuracy: (s.correctLettersTyped / newTotal) * 100
           };
@@ -296,16 +300,13 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
 
           {/* Victory Overlay Animation */}
           {isCompleted && (
-            <>
-              <LetterConfettiCanvas />
-              <div className="absolute inset-0 bg-zinc-950/95 rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
+            <div className="absolute inset-0 bg-zinc-950/95 rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
               <CheckCircle2 className="w-14 h-14 animate-bounce" />
               <span className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wider">
                 {t.textCompleted}
               </span>
               <span className="text-sm font-mono text-zinc-400">{t.loadingNext}</span>
             </div>
-          </>
           )}
         </div>
 

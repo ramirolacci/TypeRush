@@ -523,16 +523,23 @@ export const App: React.FC = () => {
           currentWordRef.current = updatedWord;
         }
       } else {
-        // Wrong Key Press: resets combo & multiplier bar to x1, does NOT lose lives!
+        // Wrong Key Press: deducts a life (heart), resets combo & multiplier bar to x1!
         soundEngine.playHit('MISS');
         setStats(s => {
           const newTotal = s.totalLettersTyped + 1;
           const newAcc = (s.correctLettersTyped / newTotal) * 100;
+          const newMissedWords = (s.missedWordsCount || 0) + 1;
+
+          if (newMissedWords >= 3) {
+            setTimeout(() => setGameState('gameover'), 50);
+          }
+
           return {
             ...s,
             combo: 0,
             multiplier: 1,
             missCount: s.missCount + 1,
+            missedWordsCount: newMissedWords,
             totalLettersTyped: newTotal,
             accuracy: newAcc
           };
