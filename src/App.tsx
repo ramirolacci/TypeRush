@@ -648,12 +648,14 @@ export const App: React.FC = () => {
               </button>
             </div>
 
-            <button
-              onClick={startNewGame}
-              className="animate-gsap-item w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-xl rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-wider"
-            >
-              <Play className="w-6 h-6 fill-black" /> {t.start}
-            </button>
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={startNewGame}
+                className="animate-gsap-item px-10 py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-lg rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all inline-flex items-center justify-center gap-2.5 uppercase tracking-wider"
+              >
+                <Play className="w-5 h-5 fill-black" /> {t.start}
+              </button>
+            </div>
           </div>
         </div>
       )}

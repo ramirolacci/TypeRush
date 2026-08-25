@@ -89,18 +89,18 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, language, o
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-2.5">
+        {/* Action Buttons - Side-by-Side in One Line */}
+        <div className="flex flex-row items-center justify-center gap-3 pt-1">
           <button
             onClick={onRestart}
-            className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-base rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+            className="px-5 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-black font-mono font-black text-sm sm:text-base rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all inline-flex items-center justify-center gap-2 uppercase tracking-wider whitespace-nowrap"
           >
-            <RefreshCw className="w-5 h-5" /> {t.playAgain}
+            <RefreshCw className="w-4 h-4" /> {t.playAgain}
           </button>
 
           <button
             onClick={onGoToMenu}
-            className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white font-mono font-bold text-sm rounded-2xl shadow-md hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+            className="px-5 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white font-mono font-bold text-sm sm:text-base rounded-2xl shadow-md hover:scale-[1.03] active:scale-95 transition-all inline-flex items-center justify-center gap-2 uppercase tracking-wider whitespace-nowrap"
           >
             <Home className="w-4 h-4 text-amber-400" /> {t.mainMenu}
           </button>

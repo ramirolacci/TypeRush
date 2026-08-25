@@ -204,12 +204,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-mono font-bold rounded-xl shadow-lg hover:brightness-110 transition-all uppercase tracking-wider mt-2"
-        >
-          {t.saveAndContinue}
-        </button>
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={onClose}
+            className="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-mono font-bold rounded-xl shadow-lg hover:brightness-110 transition-all uppercase tracking-wider inline-flex items-center justify-center"
+          >
+            {t.saveAndContinue}
+          </button>
+        </div>
       </div>
     </div>
   );
