@@ -2,9 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import type { GameStats, Language } from '../types/game';
 import { TRANSLATIONS } from '../data/translations';
 import { animationService } from '../services/animation';
-import confetti from 'canvas-confetti';
 import { Trophy, RefreshCw, Flame, Target, Award, Home } from 'lucide-react';
-import { LetterRainCanvas } from './LetterRainCanvas';
+import { LetterConfettiCanvas } from './LetterConfettiCanvas';
 
 interface GameOverModalProps {
   stats: GameStats;
@@ -22,7 +21,6 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, language, o
   useEffect(() => {
     animationService.animateModalPopup(modalRef.current);
     animationService.animateScoreCounter(scoreRef.current, stats.score);
-    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
 
     if (accuracyRef.current) {
       accuracyRef.current.textContent = `${stats.accuracy.toFixed(1)}%`;
@@ -31,9 +29,8 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, language, o
 
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 select-none">
-      {/* Gentle shower of falling letters in background */}
-      <LetterRainCanvas density={55} speedMultiplier={1.1} />
-
+      {/* Explosive letter confetti animation upon game over */}
+      <LetterConfettiCanvas />
       <div ref={modalRef} className="bg-zinc-900/95 border border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-center z-10 backdrop-blur-xl">
         {/* Header Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-mono font-bold uppercase mb-3">

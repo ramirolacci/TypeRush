@@ -4,8 +4,8 @@ import { getRandomParagraph, type ParagraphItem } from '../data/paragraphs';
 import { TRANSLATIONS } from '../data/translations';
 import { soundEngine } from '../services/audio';
 import { animationService } from '../services/animation';
-import confetti from 'canvas-confetti';
 import { Sparkles, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
+import { LetterConfettiCanvas } from './LetterConfettiCanvas';
 
 interface ParagraphViewProps {
   settings: Settings;
@@ -146,7 +146,6 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
       if (newInput.length >= currentText.length) {
         setIsCompleted(true);
         soundEngine.playComboUp(3);
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
 
         // Calculate time bonus points
         const bonus = Math.round(timeLeft * 50);
@@ -297,13 +296,16 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
 
           {/* Victory Overlay Animation */}
           {isCompleted && (
-            <div className="absolute inset-0 bg-zinc-950/95 rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
+            <>
+              <LetterConfettiCanvas />
+              <div className="absolute inset-0 bg-zinc-950/95 rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
               <CheckCircle2 className="w-14 h-14 animate-bounce" />
               <span className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wider">
                 {t.textCompleted}
               </span>
               <span className="text-sm font-mono text-zinc-400">{t.loadingNext}</span>
             </div>
+          </>
           )}
         </div>
 

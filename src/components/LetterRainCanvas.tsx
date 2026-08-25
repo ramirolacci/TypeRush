@@ -17,8 +17,8 @@ interface LetterParticle {
   rotSpeed: number;
 }
 
-const CHAR_SET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789Ñ#*$%><=/';
-const PALETTE = ['#f59e0b', '#06b6d4', '#A88267', '#71717a', '#d4d4d8', '#fbbf24'];
+const CHAR_SET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÑñ';
+const PALETTE = ['#fbbf24', '#38bdf8', '#f97316', '#ffffff'];
 
 /**
  * Ambient background Canvas rendering a gentle shower/rain of falling letters.

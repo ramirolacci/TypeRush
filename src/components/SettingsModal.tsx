@@ -3,6 +3,7 @@ import type { Settings, Difficulty } from '../types/game';
 import { TRANSLATIONS } from '../data/translations';
 import { animationService } from '../services/animation';
 import { X, Volume2, Globe, Zap, Sliders, Smartphone, Music, Gamepad2, AlignLeft } from 'lucide-react';
+import { LetterRainCanvas } from './LetterRainCanvas';
 
 interface SettingsModalProps {
   settings: Settings;
@@ -31,7 +32,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 select-none">
-      <div ref={modalRef} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative text-white">
+      {/* Gentle ambient letter rain in background */}
+      <LetterRainCanvas density={40} speedMultiplier={0.9} />
+
+      <div ref={modalRef} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative text-white z-10">
         {/* Header */}
         <div className="flex justify-between items-center pb-4 border-b border-zinc-800">
           <div className="flex items-center gap-2">
