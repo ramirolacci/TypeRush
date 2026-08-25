@@ -608,10 +608,6 @@ export const App: React.FC = () => {
               <Zap className="w-4 h-4 fill-amber-400" /> {t.menuBadge}
             </div>
 
-            <h1 className="animate-gsap-item text-4xl sm:text-5xl font-black font-mono tracking-wider bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(245,158,11,0.4)]">
-              TYPE RUSH
-            </h1>
-
             <p className="animate-gsap-item text-zinc-400 text-sm font-mono leading-relaxed">
               {t.menuDescription}
             </p>

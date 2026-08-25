@@ -216,7 +216,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-8 select-none relative bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950 overflow-y-auto">
       {/* Background Grid Lines (Matching Type Rush Canvas Vibe) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:45px_45px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:120px_120px] pointer-events-none" />
 
       {/* Background Subtle Ambient Glow */}
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-slate-950 pointer-events-none" />
