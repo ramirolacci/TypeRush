@@ -430,6 +430,19 @@ export const App: React.FC = () => {
             color: '#f59e0b'
           }
         ]);
+        setStats(s => {
+          const newMissedWords = (s.missedWordsCount || 0) + 1;
+          if (newMissedWords >= 3) {
+            setTimeout(() => setGameState('gameover'), 50);
+          }
+          return {
+            ...s,
+            combo: 0,
+            multiplier: 1,
+            missCount: s.missCount + 1,
+            missedWordsCount: newMissedWords
+          };
+        });
         return; // REJECT KEYPRESS - DO NOT ADVANCE!
       }
 
@@ -521,11 +534,16 @@ export const App: React.FC = () => {
         setStats(s => {
           const newTotal = s.totalLettersTyped + 1;
           const newAcc = (s.correctLettersTyped / newTotal) * 100;
+          const newMissedWords = (s.missedWordsCount || 0) + 1;
+          if (newMissedWords >= 3) {
+            setTimeout(() => setGameState('gameover'), 50);
+          }
           return {
             ...s,
             combo: 0,
             multiplier: 1,
             missCount: s.missCount + 1,
+            missedWordsCount: newMissedWords,
             totalLettersTyped: newTotal,
             accuracy: newAcc
           };

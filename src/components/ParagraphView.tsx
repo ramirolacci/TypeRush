@@ -29,9 +29,12 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   const timerRef = useRef<HTMLDivElement | null>(null);
   const t = TRANSLATIONS[settings.language];
 
-  // Current Paragraph State
+  // Streak of paragraphs completed in current run
+  const [paragraphCount, setParagraphCount] = useState<number>(1);
+
+  // Current Paragraph State (starts with true = authentic text sentence!)
   const [paragraph, setParagraph] = useState<ParagraphItem>(() =>
-    getRandomParagraph(settings.language, settings.difficulty)
+    getRandomParagraph(settings.language, settings.difficulty, true)
   );
 
   // User Typing State
@@ -41,9 +44,6 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   // Dynamic Timer (in seconds, with 1 decimal accuracy)
   const [timeLeft, setTimeLeft] = useState<number>(paragraph.timeLimitSeconds);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
-
-  // Streak of paragraphs completed in current run
-  const [paragraphCount, setParagraphCount] = useState<number>(1);
 
   // Keep refs for event listeners and callbacks
   const userInputRef = useRef(userInput);
@@ -58,15 +58,20 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   isCompletedRef.current = isCompleted;
   onTimeOutRef.current = onTimeOut;
 
-  // Load a fresh paragraph
+  // Load a fresh paragraph alternating between Text (odd count) and Word List (even count)
   const loadNextParagraph = useCallback(() => {
-    const nextPara = getRandomParagraph(settings.language, settings.difficulty);
-    setParagraph(nextPara);
-    setUserInput('');
-    setCharStatus([]);
-    setTimeLeft(nextPara.timeLimitSeconds);
-    setIsCompleted(false);
-    setParagraphCount(prev => prev + 1);
+    setParagraphCount(prevCount => {
+      const nextCount = prevCount + 1;
+      const isTextMode = nextCount % 2 === 1; // Odd = Text sentence, Even = Word list
+      const nextPara = getRandomParagraph(settings.language, settings.difficulty, isTextMode);
+
+      setParagraph(nextPara);
+      setUserInput('');
+      setCharStatus([]);
+      setTimeLeft(nextPara.timeLimitSeconds);
+      setIsCompleted(false);
+      return nextCount;
+    });
   }, [settings.language, settings.difficulty]);
 
   // Handle character input from keyboard or virtual mobile keys
@@ -126,11 +131,16 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         animationService.animateTimerShake(timerRef.current);
         onUpdateStats(s => {
           const newTotal = s.totalLettersTyped + 1;
+          const newMissedWords = (s.missedWordsCount || 0) + 1;
+          if (newMissedWords >= 3) {
+            setTimeout(() => onTimeOutRef.current(), 50);
+          }
           return {
             ...s,
             combo: 0,
             multiplier: 1,
             missCount: s.missCount + 1,
+            missedWordsCount: newMissedWords,
             totalLettersTyped: newTotal,
             accuracy: (s.correctLettersTyped / newTotal) * 100
           };

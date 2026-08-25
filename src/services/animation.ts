@@ -72,7 +72,8 @@ class AnimationService {
       duration,
       ease: 'power2.out',
       onUpdate: () => {
-        element.textContent = Math.round(counterObj.value).toLocaleString();
+        const rounded = Math.round(counterObj.value);
+        element.textContent = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       }
     });
   }

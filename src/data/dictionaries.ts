@@ -39,19 +39,22 @@ export const DICTIONARIES: Record<Language, {
       "ritmo", "flujo", "velez", "tecla", "nota", "fuego", "rayo", "cyber", "neon", "pista",
       "musica", "sonido", "bajo", "onda", "pulso", "juego", "nivel", "punto", "combo", "turbo",
       "golpe", "salto", "luces", "flash", "rapido", "facil", "tipeo", "dedos", "mano", "cable",
-      "disco", "radio", "pista", "baile", "sueno", "fuerza", "poder", "modo", "meta", "base"
+      "disco", "radio", "baile", "sueño", "fuerza", "poder", "modo", "meta", "base", "seña",
+      "niño", "caña", "guiño", "año", "daño", "leña"
     ],
     medium: [
       "velocidad", "teclado", "guitarra", "acelerar", "frecuencia", "sintetizador", "vibracion",
       "resonancia", "electricidad", "espectro", "turbolencia", "amplificador", "distorsion",
       "secuenciador", "supernova", "trayectoria", "revolucion", "adrenalina", "mecanismo",
       "antigravedad", "microchip", "pantalla", "algoritmo", "programacion", "computadora",
-      "relampago", "metropolis", "calidoscopio", "constelacion", "horizonte", "fantastico"
+      "relampago", "metropolis", "calidoscopio", "constelacion", "horizonte", "fantastico",
+      "diseño", "mañana", "montaña", "muñeca", "pequeño", "compañero", "español", "enseñanza"
     ],
     hard: [
       "electromagnetico", "sincronizacion", "multidimensional", "interestelar", "telecomunicacion",
       "neuroplasticidad", "fotosintesis", "termodinamica", "biodegradable", "incomprensible",
-      "caracterizacion", "desproporcionado", "estandarizacion", "intercontinental", "subconsciente"
+      "caracterizacion", "desproporcionado", "estandarizacion", "intercontinental", "subconsciente",
+      "compañerismo", "desempeño", "añoranza", "empeño"
     ],
     expert: [
       "electroencefalograma", "inconstitucionalidad", "desoxirribonucleico", "esternocleidomastoideo",

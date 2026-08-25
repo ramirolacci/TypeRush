@@ -36,7 +36,7 @@ export const HUD: React.FC<HUDProps> = ({
       <div className="pointer-events-auto bg-black/85 border border-zinc-800 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-md min-w-[140px] sm:min-w-[190px]">
         <div className="text-[10px] sm:text-xs tracking-widest text-zinc-400 font-mono uppercase">{t.score}</div>
         <div className="text-2xl sm:text-4xl font-black font-mono text-white tracking-wider my-0.5">
-          {stats.score.toLocaleString()}
+          {stats.score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
         </div>
 
         {/* Combo Multiplier Bar */}

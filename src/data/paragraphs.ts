@@ -19,25 +19,29 @@ const PARAGRAPH_DATABASE: Record<Language, string[]> = {
     "un buen mecanografo no solo busca la maxima rapidez sino mantener la exactitud en cada palabra",
     "la agilidad mental y los reflejos se combinan en este desafio de velocidad contra el reloj",
     "los grandes desarrolladores escriben codigo con fluidez convirtiendo ideas en algoritmos al instante",
-    "supera tus propios limites en cada ronda y convierte la practica diaria en un habito indestructible"
+    "supera tus propios limites en cada ronda y convierte la practica diaria en un habito indestructible",
+    "el diseño de cada nivel desafia tu concentracion y tu empeño constante en cada intento",
+    "mañana podras superar tus marcas con practica y perseverancia frente a la pantalla",
+    "el español es un idioma rico lleno de palabras hermosas para practicar la mecanografia",
+    "un pequeño esfuerzo diario genera grandes resultados a lo largo del tiempo",
+    "mantener una postura adecuada y relajada permite escribir durante horas sin fatiga muscular",
+    "la memoria muscular de las manos es el secreto mejor guardado de los mecanografos expertos"
   ],
   en: [
-    "down the system all however the thing lead again same now more late another keep long great out leave the last early general at",
     "typing speed is a skill that develops through consistent practice and continuous focus on accuracy",
     "the rhythm of your fingers flowing across the keyboard creates a smooth stream of thoughts into digital words",
     "every keystroke typed with precision boosts your performance and sharpens your muscle memory for future challenges",
     "true speed comes not from rushing blindly but from maintaining a steady calm momentum without making mistakes",
     "react quickly as each character presents itself under the pressure of the countdown timer running out",
-    "great code and ideas are born when mind and fingers synchronize in total harmony with the mechanical switches"
+    "great code and ideas are born when mind and fingers synchronize in total harmony with the mechanical switches",
+    "developing finger dexterity and smooth coordination opens up endless possibilities for speed typing",
+    "focusing on rhythm and fluid movements allows you to type faster without straining your hands",
+    "mastering touch typing transforms your computer into a seamless natural extension of your thoughts"
   ]
 };
 
 /**
  * Calculates the dynamic time limit in seconds based on character count and difficulty.
- * - Easy: ~3.2 CPS (Characters Per Second)
- * - Medium: ~4.2 CPS
- * - Hard: ~5.5 CPS
- * - Expert: ~7.0 CPS
  */
 export function calculateTimeLimit(totalChars: number, difficulty: Difficulty): number {
   const cpsMap: Record<Difficulty, number> = {
@@ -48,33 +52,46 @@ export function calculateTimeLimit(totalChars: number, difficulty: Difficulty): 
   };
 
   const cps = cpsMap[difficulty] || 4.2;
-  // Give a small 2-second grace period for initial reaction
   const calculatedSeconds = Math.ceil(totalChars / cps) + 2;
   return Math.max(6, calculatedSeconds);
 }
 
+let lastSentenceIdx = -1;
+
 /**
- * Generates a paragraph item (either from curated database or 25 random words like Monkeytype).
+ * Generates a paragraph item (either a curated text sentence or a random word list).
+ * - isTextMode = true: Curated text sentence
+ * - isTextMode = false: Random word list from dictionary
  */
-export function getRandomParagraph(lang: Language, difficulty: Difficulty = 'medium'): ParagraphItem {
-  const useGenerated = Math.random() > 0.4;
+export function getRandomParagraph(
+  lang: Language,
+  difficulty: Difficulty = 'medium',
+  isTextMode?: boolean
+): ParagraphItem {
+  // Default to boolean logic if not specified
+  const shouldBeText = isTextMode !== undefined ? isTextMode : true;
   let text = '';
 
-  if (useGenerated) {
-    // Generate a 25-word random paragraph (Monkeytype classic style)
+  if (shouldBeText) {
+    // Pick a curated sentence from database (avoiding immediate repeat)
+    const database = PARAGRAPH_DATABASE[lang] || PARAGRAPH_DATABASE.es;
+    let randIdx = Math.floor(Math.random() * database.length);
+    if (database.length > 1 && randIdx === lastSentenceIdx) {
+      randIdx = (randIdx + 1) % database.length;
+    }
+    lastSentenceIdx = randIdx;
+    text = database[randIdx];
+  } else {
+    // Generate a random word list (Monkeytype word sprint style)
     const wordList = DICTIONARIES[lang][difficulty] || DICTIONARIES[lang].medium;
     const selectedWords: string[] = [];
-    const targetWordCount = difficulty === 'easy' ? 18 : difficulty === 'medium' ? 25 : 30;
+    const targetWordCount = difficulty === 'easy' ? 16 : difficulty === 'medium' ? 22 : 28;
 
     for (let i = 0; i < targetWordCount; i++) {
       const randIdx = Math.floor(Math.random() * wordList.length);
       selectedWords.push(wordList[randIdx].toLowerCase());
     }
     text = selectedWords.join(' ');
-  } else {
-    const database = PARAGRAPH_DATABASE[lang] || PARAGRAPH_DATABASE.es;
-    const randIdx = Math.floor(Math.random() * database.length);
-    text = database[randIdx];
   }
 
   const words = text.split(' ');
