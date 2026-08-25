@@ -4,6 +4,7 @@ import { TRANSLATIONS } from '../data/translations';
 import { animationService } from '../services/animation';
 import confetti from 'canvas-confetti';
 import { Trophy, RefreshCw, Flame, Target, Award, Home } from 'lucide-react';
+import { LetterRainCanvas } from './LetterRainCanvas';
 
 interface GameOverModalProps {
   stats: GameStats;
@@ -15,24 +16,25 @@ interface GameOverModalProps {
 export const GameOverModal: React.FC<GameOverModalProps> = ({ stats, language, onRestart, onGoToMenu }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const scoreRef = useRef<HTMLDivElement | null>(null);
+  const accuracyRef = useRef<HTMLSpanElement | null>(null);
   const t = TRANSLATIONS[language];
 
   useEffect(() => {
     animationService.animateModalPopup(modalRef.current);
     animationService.animateScoreCounter(scoreRef.current, stats.score);
+    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
 
-    if (stats.accuracy > 80) {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+    if (accuracyRef.current) {
+      accuracyRef.current.textContent = `${stats.accuracy.toFixed(1)}%`;
     }
   }, [stats.accuracy, stats.score]);
 
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 select-none">
-      <div ref={modalRef} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-center">
+      {/* Gentle shower of falling letters in background */}
+      <LetterRainCanvas density={55} speedMultiplier={1.1} />
+
+      <div ref={modalRef} className="bg-zinc-900/95 border border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-white text-center z-10 backdrop-blur-xl">
         {/* Header Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-mono font-bold uppercase mb-3">
           <Trophy className="w-4 h-4" /> {t.gameOverTitle}

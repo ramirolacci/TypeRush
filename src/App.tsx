@@ -16,10 +16,11 @@ import { RhythmCanvas } from './components/RhythmCanvas';
 import { WordStack } from './components/WordStack';
 import { ParagraphView } from './components/ParagraphView';
 import { HUD } from './components/HUD';
-import { MobileKeyboard } from './components/MobileKeyboard';
 import { SettingsModal } from './components/SettingsModal';
 import { GameOverModal } from './components/GameOverModal';
-import { Play, Globe, Zap, Keyboard, AlignLeft, Gamepad2 } from 'lucide-react';
+import { LetterRainCanvas } from './components/LetterRainCanvas';
+import { MobileKeyboard } from './components/MobileKeyboard';
+import { Play, Globe, Zap, Keyboard, AlignLeft } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Game States
@@ -579,10 +580,13 @@ export const App: React.FC = () => {
     <div className="w-screen h-screen flex flex-col bg-slate-950 text-white font-sans overflow-hidden select-none">
       {/* 1. Main Landing Menu View */}
       {gameState === 'menu' && (
-        <div className="relative flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950">
+        <div className="relative flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950 overflow-hidden">
+          {/* Gentle ambient letter rain in background */}
+          <LetterRainCanvas density={40} speedMultiplier={0.9} />
+
           <div
             ref={menuContainerRef}
-            className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6"
+            className="max-w-md w-full bg-zinc-900/95 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6 z-10 relative"
           >
             {/* Project Logo Image */}
             <div className="animate-gsap-item flex justify-center mb-1">
