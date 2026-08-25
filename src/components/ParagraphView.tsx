@@ -216,31 +216,31 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
   const isTimeLow = timeLeft <= 5 && timeLeft > 0;
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-8 select-none relative bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950 overflow-y-auto">
+    <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-8 select-none relative bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950 overflow-y-auto pb-32 sm:pb-8">
       {/* Background Grid Lines (Matching Type Rush Canvas Vibe) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:120px_120px] pointer-events-none" />
 
       {/* Background Subtle Ambient Glow */}
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-slate-950 pointer-events-none" />
 
-      <div className="max-w-3xl sm:max-w-4xl w-full flex flex-col items-center text-center z-10 space-y-4 sm:space-y-5 pt-12 sm:pt-14 pb-4">
+      <div className="max-w-3xl sm:max-w-4xl w-full flex flex-col items-center text-center z-10 space-y-2.5 sm:space-y-5 pt-14 sm:pt-14 pb-2 sm:pb-4">
         
         {/* Top Header: Word Counter (e.g. 0/18) */}
         <div className="flex flex-col items-center">
-          <div className="flex items-center gap-2 text-xs sm:text-sm font-mono font-bold tracking-widest text-amber-500/90 uppercase mb-1">
-            <Sparkles className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-sm font-mono font-bold tracking-widest text-amber-500/90 uppercase mb-0.5 sm:mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             {t.textHeader} #{paragraphCount} &bull; {paragraph.totalChars} {t.characters}
           </div>
 
-          <div className="text-4xl sm:text-6xl md:text-7xl font-black font-mono tracking-wider text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+          <div className="text-3xl sm:text-6xl md:text-7xl font-black font-mono tracking-wider text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]">
             {currentWordIndex}/{paragraph.words.length}
           </div>
         </div>
 
         {/* Central Text Box Component */}
-        <div className="w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xl relative min-h-[160px] flex items-center justify-center">
+        <div className="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 shadow-2xl backdrop-blur-xl relative min-h-[120px] sm:min-h-[160px] flex items-center justify-center">
           
-          <div className="text-xl sm:text-2xl md:text-3xl font-mono leading-relaxed tracking-wide text-left flex flex-wrap gap-x-[0.3em] gap-y-2">
+          <div className="text-base sm:text-2xl md:text-3xl font-mono leading-relaxed tracking-wide text-left flex flex-wrap gap-x-[0.3em] gap-y-1.5 sm:gap-y-2">
             {paragraph.words.map((word, wordIdx) => {
               // Calculate start char index for this word in paragraph.text
               const startCharIndex = paragraph.words.slice(0, wordIdx).join(' ').length + (wordIdx > 0 ? 1 : 0);
@@ -281,15 +281,15 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
 
                     let spaceClass = 'inline-block w-[0.4em]';
                     if (spaceStatus === 'correct') {
-                      spaceClass += ' text-amber-400/40';
+                      spaceClass += ' bg-amber-500/20 rounded';
                     } else if (spaceStatus === 'incorrect') {
                       spaceClass += ' bg-rose-500/40 rounded';
                     }
 
                     return (
-                      <span key={`space-${wordIdx}`} className="relative inline-block">
+                      <span className="relative inline-block">
                         {isCursorAtSpace && (
-                          <span className="absolute -left-[3px] top-0 bottom-0 w-[3px] bg-amber-400 rounded-full animate-pulse shadow-[0_0_10px_#f59e0b]" />
+                          <span className="absolute -left-[2px] top-0 bottom-0 w-[3px] bg-amber-400 rounded-full animate-pulse shadow-[0_0_10px_#f59e0b]" />
                         )}
                         <span className={spaceClass}>&nbsp;</span>
                       </span>
@@ -302,25 +302,25 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
 
           {/* Victory Overlay Animation */}
           {isCompleted && (
-            <div className="absolute inset-0 bg-zinc-950/95 rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
-              <CheckCircle2 className="w-14 h-14 animate-bounce" />
-              <span className="text-xl sm:text-2xl font-black font-mono uppercase tracking-wider">
+            <div className="absolute inset-0 bg-zinc-950/95 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center gap-2 animate-fade-in text-emerald-400">
+              <CheckCircle2 className="w-10 h-10 sm:w-14 sm:h-14 animate-bounce" />
+              <span className="text-lg sm:text-2xl font-black font-mono uppercase tracking-wider">
                 {t.textCompleted}
               </span>
-              <span className="text-sm font-mono text-zinc-400">{t.loadingNext}</span>
+              <span className="text-xs sm:text-sm font-mono text-zinc-400">{t.loadingNext}</span>
             </div>
           )}
         </div>
 
         {/* Dynamic Countdown Timer Display */}
-        <div className="flex flex-col items-center space-y-2 w-full max-w-md">
-          <div className="text-xs sm:text-sm font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5 font-bold">
-            <Zap className="w-4 h-4 text-amber-500 animate-bounce" /> {t.timeRemaining}
+        <div className="flex flex-col items-center space-y-1 sm:space-y-2 w-full max-w-md">
+          <div className="text-[10px] sm:text-sm font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+            <Zap className="w-3.5 h-3.5 text-amber-500 animate-bounce" /> {t.timeRemaining}
           </div>
 
           <div
             ref={timerRef}
-            className={`text-4xl sm:text-6xl md:text-7xl font-black font-mono transition-all duration-150 ${
+            className={`text-3xl sm:text-6xl md:text-7xl font-black font-mono transition-all duration-150 ${
               isTimeLow
                 ? 'text-rose-500 scale-110 drop-shadow-[0_0_25px_rgba(244,63,94,0.9)] animate-pulse'
                 : 'text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.6)]'
@@ -330,7 +330,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
           </div>
 
           {/* Animated Glowing Progress Bar */}
-          <div className="w-full h-2.5 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+          <div className="w-full h-2 sm:h-2.5 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
             <div
               className={`h-full rounded-full transition-all duration-100 ${
                 isTimeLow
@@ -343,7 +343,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
             />
           </div>
 
-          <p className="text-xs sm:text-sm font-mono text-zinc-400 pt-0.5">
+          <p className="text-[10px] sm:text-sm font-mono text-zinc-400 pt-0.5">
             {t.assignedTime} <span className="text-zinc-200 font-bold">{paragraph.timeLimitSeconds}s</span> ({paragraph.totalChars} {t.characters})
           </p>
         </div>
@@ -351,9 +351,9 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         {/* Manual Skip Button */}
         <button
           onClick={loadNextParagraph}
-          className="py-2.5 px-6 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-full text-xs sm:text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-lg"
+          className="py-1.5 px-4 sm:py-2.5 sm:px-6 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-full text-xs sm:text-sm font-mono font-bold text-zinc-200 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-lg"
         >
-          {t.skipText} <ArrowRight className="w-4 h-4" />
+          {t.skipText} <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
       </div>
     </div>

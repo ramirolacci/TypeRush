@@ -29,10 +29,10 @@ export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
   const t = TRANSLATIONS[language];
 
   return (
-    <div className="w-full bg-zinc-950/95 border-t border-zinc-800 p-2 select-none z-20 pb-safe">
-      <div className="flex flex-col gap-1.5 max-w-xl mx-auto">
+    <div className="w-full bg-zinc-950/95 border-t border-zinc-800 p-1.5 sm:p-2.5 select-none z-40 pb-safe touch-manipulation">
+      <div className="flex flex-col gap-1 max-w-lg mx-auto">
         {rows.map((row, rIdx) => (
-          <div key={`row-${rIdx}`} className="flex justify-center gap-1">
+          <div key={`row-${rIdx}`} className="flex justify-center gap-0.5 sm:gap-1">
             {row.map((key) => {
               const isTarget = activeChar === key;
               return (
@@ -40,8 +40,8 @@ export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
                   key={key}
                   onClick={() => onKeyPress(key)}
                   className={`
-                    flex-1 max-w-[42px] h-11 sm:h-12 rounded-lg font-mono text-base sm:text-lg font-bold
-                    flex items-center justify-center transition-all duration-150 active:scale-95 shadow-md
+                    flex-1 max-w-[34px] sm:max-w-[42px] h-10 sm:h-12 rounded-md sm:rounded-lg font-mono text-xs sm:text-base font-bold
+                    flex items-center justify-center transition-all duration-100 active:scale-95 shadow-md touch-manipulation
                     ${isTarget
                       ? 'bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-amber-500/50 shadow-lg border-2 border-amber-300 animate-pulse'
                       : 'bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/60'
@@ -55,16 +55,16 @@ export const MobileKeyboard: React.FC<MobileKeyboardProps> = ({
           </div>
         ))}
         {/* Extra Bottom Row: Spacebar & Backspace */}
-        <div className="flex justify-center gap-2 pt-1">
+        <div className="flex justify-center gap-1.5 pt-0.5">
           <button
             onClick={() => onKeyPress(' ')}
-            className="flex-2 py-2 px-6 bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 rounded-lg font-mono text-xs font-bold border border-zinc-700"
+            className="flex-2 h-10 px-4 bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 rounded-md sm:rounded-lg font-mono text-xs font-bold border border-zinc-700 flex items-center justify-center touch-manipulation active:scale-95"
           >
             {t.spaceKey}
           </button>
           <button
             onClick={() => onKeyPress('Backspace')}
-            className="flex-1 py-2 px-4 bg-rose-950/80 hover:bg-rose-900/80 text-rose-300 rounded-lg font-mono text-xs font-bold border border-rose-800"
+            className="flex-1 max-w-[100px] h-10 px-3 bg-rose-950/80 hover:bg-rose-900/80 text-rose-300 rounded-md sm:rounded-lg font-mono text-xs font-bold border border-rose-800 flex items-center justify-center touch-manipulation active:scale-95"
           >
             ⌫ {t.backspaceKey}
           </button>

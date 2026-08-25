@@ -39,6 +39,13 @@ export const App: React.FC = () => {
     gameMode: 'rhythm'
   });
 
+  // Auto-detect mobile touch screen to enable virtual keyboard by default on mobile
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window)) {
+      setSettings(s => ({ ...s, showMobileKeyboard: true }));
+    }
+  }, []);
+
   // Game Data
   const [currentWord, setCurrentWord] = useState<WordItem | null>(null);
   const [upcomingWords, setUpcomingWords] = useState<string[]>([]);
@@ -587,7 +594,7 @@ export const App: React.FC = () => {
 
           <div
             ref={menuContainerRef}
-            className="max-w-md w-full bg-zinc-900/95 border border-zinc-800 rounded-3xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6 z-10 relative"
+            className="max-w-md w-full bg-zinc-900/95 border border-zinc-800 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-xl text-center space-y-4 sm:space-y-6 z-10 relative max-h-[92vh] overflow-y-auto"
           >
             {/* Project Logo Image */}
             <div className="animate-gsap-item flex justify-center mb-1">
@@ -722,6 +729,7 @@ export const App: React.FC = () => {
                   judgments={judgments}
                   particles={particles}
                   combo={stats.combo}
+                  hasMobileKeyboard={settings.showMobileKeyboard}
                 />
               </div>
 

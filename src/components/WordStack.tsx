@@ -21,14 +21,14 @@ export const WordStack: React.FC<WordStackProps> = ({
 
   return (
     <div
-      className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center z-30 select-none pointer-events-none transition-all duration-300 ${
-        hasMobileKeyboard ? 'bottom-36 sm:bottom-40' : 'bottom-4 sm:bottom-6'
+      className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center z-30 select-none pointer-events-none transition-all duration-300 w-full max-w-[95vw] ${
+        hasMobileKeyboard ? 'bottom-40 sm:bottom-44' : 'bottom-4 sm:bottom-6'
       }`}
     >
       {/* Active Target Word with Code Editor / Terminal Typography */}
-      <div className="relative flex items-center justify-center tracking-[0.25em] text-3xl sm:text-4xl md:text-5xl font-['JetBrains_Mono','Fira_Code','Cascadia_Code','Consolas',monospace] font-black py-1.5 px-4 bg-zinc-950/80 border border-zinc-800/80 rounded-2xl shadow-2xl backdrop-blur-md">
+      <div className="relative flex items-center justify-center tracking-wider sm:tracking-[0.25em] text-xl sm:text-3xl md:text-4xl font-['JetBrains_Mono','Fira_Code','Cascadia_Code','Consolas',monospace] font-black py-1 px-2.5 sm:py-1.5 sm:px-4 bg-zinc-950/90 border border-zinc-800/80 rounded-xl sm:rounded-2xl shadow-2xl backdrop-blur-md max-w-full overflow-hidden">
         {/* Console Prompt Symbol */}
-        <span className="text-zinc-600 text-xl sm:text-2xl font-mono mr-2 select-none">&gt;_</span>
+        <span className="text-zinc-600 text-sm sm:text-xl font-mono mr-1.5 select-none">&gt;_</span>
 
         {/* Completed Letters */}
         <span className="text-amber-400 drop-shadow-[0_0_14px_rgba(245,158,11,0.9)]">
@@ -37,7 +37,7 @@ export const WordStack: React.FC<WordStackProps> = ({
 
         {/* Current Target Letter with cursor block / underline */}
         {currentLetter && (
-          <span className="relative text-white bg-amber-500/20 border-b-4 border-amber-400 px-1 rounded-t-sm drop-shadow-[0_0_18px_rgba(255,255,255,1)] animate-pulse">
+          <span className="relative text-white bg-amber-500/20 border-b-2 sm:border-b-4 border-amber-400 px-0.5 rounded-t-sm drop-shadow-[0_0_18px_rgba(255,255,255,1)] animate-pulse">
             {currentLetter}
           </span>
         )}
@@ -49,14 +49,14 @@ export const WordStack: React.FC<WordStackProps> = ({
       </div>
 
       {/* Upcoming Queued Words Stack with Console Font */}
-      <div className="flex flex-col items-center gap-1 mt-2 text-zinc-500 font-['JetBrains_Mono','Fira_Code','Consolas',monospace] text-sm sm:text-base tracking-[0.2em] font-semibold select-none">
-        {upcomingWords.slice(0, 3).map((word, idx) => (
+      <div className="flex flex-col items-center gap-0.5 mt-1 sm:mt-2 text-zinc-500 font-['JetBrains_Mono','Fira_Code','Consolas',monospace] text-xs sm:text-sm tracking-wider sm:tracking-[0.2em] font-semibold select-none">
+        {upcomingWords.slice(0, hasMobileKeyboard ? 1 : 2).map((word, idx) => (
           <div
             key={`${word}-${idx}`}
             className="transition-all duration-300 flex items-center gap-1"
-            style={{ opacity: 0.60 - idx * 0.16 }}
+            style={{ opacity: 0.60 - idx * 0.2 }}
           >
-            <span className="text-zinc-700 text-xs">$</span> {word}
+            <span className="text-zinc-700 text-[10px] sm:text-xs">$</span> {word}
           </div>
         ))}
       </div>

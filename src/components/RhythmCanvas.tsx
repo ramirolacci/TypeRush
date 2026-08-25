@@ -6,13 +6,15 @@ interface RhythmCanvasProps {
   judgments: HitJudgment[];
   particles: Particle[];
   combo: number;
+  hasMobileKeyboard?: boolean;
 }
 
 export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
   notes,
   judgments,
   particles,
-  combo
+  combo,
+  hasMobileKeyboard = false
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -34,8 +36,8 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
 
       ctx.clearRect(0, 0, width, height);
 
-      // Strike Line parameters - set at 72% height to leave bottom room for WordStack
-      const strikeY = height * 0.72;
+      // Strike Line parameters - set at 50% height if mobile keyboard is visible, else 72%
+      const strikeY = height * (hasMobileKeyboard ? 0.50 : 0.72);
       const numLanes = 4;
       const laneWidth = width / (numLanes + 1);
 
@@ -249,7 +251,7 @@ export const RhythmCanvas: React.FC<RhythmCanvasProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [notes, judgments, particles, combo]);
+  }, [notes, judgments, particles, combo, hasMobileKeyboard]);
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-gradient-to-b from-slate-950 via-zinc-950 to-neutral-950 select-none">
