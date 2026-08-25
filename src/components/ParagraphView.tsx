@@ -131,16 +131,11 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         animationService.animateTimerShake(timerRef.current);
         onUpdateStats(s => {
           const newTotal = s.totalLettersTyped + 1;
-          const newMissedWords = (s.missedWordsCount || 0) + 1;
-          if (newMissedWords >= 3) {
-            setTimeout(() => onTimeOutRef.current(), 50);
-          }
           return {
             ...s,
             combo: 0,
             multiplier: 1,
             missCount: s.missCount + 1,
-            missedWordsCount: newMissedWords,
             totalLettersTyped: newTotal,
             accuracy: (s.correctLettersTyped / newTotal) * 100
           };

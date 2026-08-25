@@ -416,7 +416,7 @@ export const App: React.FC = () => {
       const isInHitWindow = targetNote.progress >= 0.70 && targetNote.progress <= 1.15;
 
       if (!isInHitWindow) {
-        // Attempted too early (note is still above circles) or too late
+        // Attempted too early (note is still above circles) or too late: resets combo & multiplier bar to x1, does NOT lose lives!
         soundEngine.playHit('MISS');
         setJudgments(j => [
           ...j,
@@ -430,19 +430,12 @@ export const App: React.FC = () => {
             color: '#f59e0b'
           }
         ]);
-        setStats(s => {
-          const newMissedWords = (s.missedWordsCount || 0) + 1;
-          if (newMissedWords >= 3) {
-            setTimeout(() => setGameState('gameover'), 50);
-          }
-          return {
-            ...s,
-            combo: 0,
-            multiplier: 1,
-            missCount: s.missCount + 1,
-            missedWordsCount: newMissedWords
-          };
-        });
+        setStats(s => ({
+          ...s,
+          combo: 0,
+          multiplier: 1,
+          missCount: s.missCount + 1
+        }));
         return; // REJECT KEYPRESS - DO NOT ADVANCE!
       }
 
@@ -529,21 +522,16 @@ export const App: React.FC = () => {
           currentWordRef.current = updatedWord;
         }
       } else {
-        // Wrong Key Press!
+        // Wrong Key Press: resets combo & multiplier bar to x1, does NOT lose lives!
         soundEngine.playHit('MISS');
         setStats(s => {
           const newTotal = s.totalLettersTyped + 1;
           const newAcc = (s.correctLettersTyped / newTotal) * 100;
-          const newMissedWords = (s.missedWordsCount || 0) + 1;
-          if (newMissedWords >= 3) {
-            setTimeout(() => setGameState('gameover'), 50);
-          }
           return {
             ...s,
             combo: 0,
             multiplier: 1,
             missCount: s.missCount + 1,
-            missedWordsCount: newMissedWords,
             totalLettersTyped: newTotal,
             accuracy: newAcc
           };
