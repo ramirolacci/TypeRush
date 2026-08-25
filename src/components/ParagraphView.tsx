@@ -137,11 +137,16 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
         animationService.animateTimerShake(timerRef.current);
         onUpdateStats(s => {
           const newTotal = s.totalLettersTyped + 1;
+          const newMissedWords = (s.missedWordsCount || 0) + 1;
+          if (newMissedWords >= 3) {
+            setTimeout(() => onTimeOutRef.current(), 50);
+          }
           return {
             ...s,
             combo: 0,
             multiplier: 1,
             missCount: s.missCount + 1,
+            missedWordsCount: newMissedWords,
             totalLettersTyped: newTotal,
             accuracy: (s.correctLettersTyped / newTotal) * 100
           };
@@ -330,7 +335,7 @@ export const ParagraphView: React.FC<ParagraphViewProps> = ({
           </div>
 
           {/* Animated Glowing Progress Bar */}
-          <div className="w-full h-2 sm:h-2.5 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+          <div className="w-[85vw] sm:w-full max-w-md h-3 sm:h-3.5 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner my-0.5">
             <div
               className={`h-full rounded-full transition-all duration-100 ${
                 isTimeLow
